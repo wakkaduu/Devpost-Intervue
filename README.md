@@ -2,7 +2,7 @@
 
 A mock interview web app for job applicants who are prepared but nervous. Pick a track, answer questions **by voice or in writing**, and get AI coaching that quotes what you actually said: what to work on first, a stronger way to say it, and the follow-up question a real interviewer would ask. A history chart shows whether you're improving.
 
-Built with Next.js, TypeScript, Gemini (with Groq as a backup reviewer), Supabase and Auth.js.
+Built with Next.js, TypeScript, Gemini (with Groq as a backup reviewer), Supabase, Auth.js and nodemailer.
 
 ## What it does
 
@@ -43,15 +43,16 @@ Everything is configured in `.env.local`, which is git-ignored. **Never commit i
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | "Continue with GitHub" (optional) | GitHub → Settings → Developer settings → OAuth Apps |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | "Continue with Google" (optional) | Google Cloud console → Credentials |
 | `AUTH_FACEBOOK_ID` / `AUTH_FACEBOOK_SECRET` | "Continue with Facebook" (optional) | [Meta for Developers](https://developers.facebook.com/apps) → your app → Settings → Basic |
-| `RESEND_API_KEY`, `EMAIL_FROM` | Emailing confirmation codes | [Resend](https://resend.com/api-keys) |
+| `SMTP_USER`, `SMTP_PASSWORD` | Emailing confirmation codes (nodemailer). For Gmail, an [app password](https://myaccount.google.com/apppasswords) | Your mail account |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `EMAIL_FROM` | Optional: another mail service or a custom From line (defaults to Gmail over SSL) | |
 
-Without a Gemini or Groq key the app still runs and gives "basic feedback". Without Supabase it works as a guest-only app. Without a Resend key, confirmation codes are printed in the server terminal during development.
+Without a Gemini or Groq key the app still runs and gives "basic feedback". Without Supabase it works as a guest-only app. Without SMTP settings, confirmation codes are printed in the server terminal during development.
 
 **Database.** In a new Supabase project, open the SQL Editor and run [`supabase/schema.sql`](supabase/schema.sql) once. It creates the `users` and `interview_sessions` tables with row-level security on.
 
 **Social sign-in.** Set the OAuth callback URL to `http://localhost:3000/api/auth/callback/github` (or `/google`, `/facebook`). The three buttons always show; one without its keys explains that it isn't set up on this server yet.
 
-**Email.** Until you verify a domain with Resend, use `EMAIL_FROM=Intervue <onboarding@resend.dev>`; Resend then delivers only to your own Resend account's email address.
+**Email.** Confirmation codes are sent over SMTP. For Gmail, turn on 2-Step Verification, create an app password and put it in `SMTP_PASSWORD`; the mail then goes out from that Gmail address to anyone. Gmail limits how many messages an account may send per day, so for a public launch use a transactional mail service and set `SMTP_HOST` and friends.
 
 ## How a review works
 

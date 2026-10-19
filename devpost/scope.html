@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Intervue Scope</title>
+<style>
+:root{--bg:#f7f7fb;--fg:#1c1d29;--card:#fff;--ac:#5b5bd6;--mut:#6b6e85;--bd:#e3e4ee}
+@media(prefers-color-scheme:dark){:root{--bg:#14151f;--fg:#ececf5;--card:#1e2030;--ac:#9a9aff;--mut:#9a9db5;--bd:#32344a}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 56px}
+h1{margin:0}h2{margin:32px 0 8px;font-size:1.1rem;color:var(--ac)}
+.sub{color:var(--mut)}.badge{display:inline-block;padding:2px 10px;border-radius:99px;background:var(--ac);color:var(--bg);font-size:.8rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
+details{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 16px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+svg{width:100%;height:auto}svg text{fill:var(--fg);font:13px system-ui}
+.box{fill:var(--card);stroke:var(--ac);stroke-width:1.5}.arr{stroke:var(--mut);stroke-width:1.5;fill:none}
+</style></head><body><main>
+<h1>Intervue <span class="badge">draft</span></h1>
+<p class="sub">A mock interview web app that helps job applicants prepare, with AI feedback specific to each answer.</p>
+
+<h2>The loop at a glance</h2>
+<div class="card">
+<svg viewBox="0 0 720 150" role="img" aria-label="Applicant picks category and answer mode, answers several questions, submits, AI returns review, recommendations and follow-up, history chart shows progress, loop repeats">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="#888"/></marker></defs>
+<rect class="box" x="5" y="40" width="120" height="60" rx="8"/><text x="65" y="66" text-anchor="middle">Pick category</text><text x="65" y="84" text-anchor="middle">+ voice/written</text>
+<rect class="box" x="150" y="40" width="120" height="60" rx="8"/><text x="210" y="66" text-anchor="middle">Answer several</text><text x="210" y="84" text-anchor="middle">questions</text>
+<rect class="box" x="295" y="40" width="130" height="60" rx="8"/><text x="360" y="66" text-anchor="middle">AI review, tips,</text><text x="360" y="84" text-anchor="middle">follow-up question</text>
+<rect class="box" x="450" y="40" width="120" height="60" rx="8"/><text x="510" y="66" text-anchor="middle">Delivery: pace,</text><text x="510" y="84" text-anchor="middle">fillers, tone</text>
+<rect class="box" x="595" y="40" width="120" height="60" rx="8"/><text x="655" y="66" text-anchor="middle">History chart</text><text x="655" y="84" text-anchor="middle">(progress)</text>
+<path class="arr" marker-end="url(#a)" d="M125 70H148"/><path class="arr" marker-end="url(#a)" d="M270 70H293"/><path class="arr" marker-end="url(#a)" d="M425 70H448"/><path class="arr" marker-end="url(#a)" d="M570 70H593"/>
+<path class="arr" marker-end="url(#a)" d="M655 100V135H65V102"/><text x="360" y="130" text-anchor="middle">come back and practise again</text>
+</svg></div>
+
+<h2>Kernel</h2>
+<div class="card">AI writes each review, so feedback is never repetitive and gives real insight. It asks the follow-up a real interviewer would ask where your answer has holes, and a history chart shows whether you've improved since your first attempt.</div>
+
+<h2>Who it's for</h2>
+<div class="card">Job applicants and interview preparers, especially people like the builder: prepared, but always nervous.</div>
+
+<h2>Why it matters</h2>
+<div class="card">"I am one of those applicants that's wanted to be prepared but also always nervous."</div>
+
+<h2>What "working" looks like</h2>
+<div class="card">Open the web app, pick a category, choose voice or written, answer several questions, submit. Get AI reviews, recommendations and a follow-up question, then see your progress chart. Delivery feedback = words per minute, filler words, and the AI's tone read. The chart plots each session's average score over time.</div>
+
+<h2>Boundary</h2>
+<details open><summary>In: core loop first</summary>Categories, voice or written answers, several questions per session, AI review with recommendations, AI follow-up question, delivery feedback, sign-in with saved history, progress chart.</details>
+<details open><summary>In: then everything else in the repo</summary>Email sign-up with confirmation, guest mode, session debrief summary, interviewer voice, mic check and live delivery HUD, autosave and resume, multiple AI providers with fallback, API-key modal, rate limiting and validation, PWA, shared UI system. Added in verified steps, keeping the app demoable at each step.</details>
+<details><summary>Time risk</summary>Well beyond the 2-4 hour target. The PRD and spec will mark core versus extended parts.</details>
+<details><summary>Later</summary>Vercel deployment (optional for the hackathon).</details>
+<details><summary>Explicitly cut</summary>Nothing. The old repo's demo-video project (my-video/) is not part of the app and is not rebuilt.</details>
+</main></body></html>

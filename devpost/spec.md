@@ -12,7 +12,7 @@ Intervue is a website with two halves.
 
 - **The browser half (the front end)** is what people see: the Home card, the interview screen, the results, the history chart. It runs in the person's browser. It listens to the microphone and shows a live transcript using the browser's own speech tools, and the interviewer's voice also uses the browser's built-in speech.
 - **The server half (the back end)** is a set of small "doors" in your own app (called API routes, such as `/api/review`). The browser sends something through a door and gets a reply. The doors check the request, hold the secret keys, and talk to outside services.
-- **Outside services:** Gemini (and Groq as a backup) read the answer and write the review. Supabase is the online spreadsheet where accounts and saved sessions live. Resend sends confirmation emails. Google and GitHub confirm who you are when you sign in with them.
+- **Outside services:** Gemini (and Groq as a backup) read the answer and write the review. Supabase is the online spreadsheet where accounts and saved sessions live. Gmail (via nodemailer) sends confirmation emails. Google and GitHub confirm who you are when you sign in with them.
 - **Where the secret keys live:** only on the server, in a git-ignored `.env.local`. The browser never sees an AI key.
 - **Guests vs accounts:** a guest's history sits in the browser's own sticky note (`localStorage`). A signed-in person's history is saved in Supabase, so it follows them across devices.
 
@@ -39,7 +39,7 @@ Versions from the existing `package.json`; re-verify at install.
 - **Supabase (`@supabase/supabase-js` ^2)** — hosted Postgres for users and sessions. [docs](https://supabase.com/docs)
 - **Gemini (`@google/generative-ai` ^0.24)** — review, debrief, and transcription fallback. [docs](https://ai.google.dev/gemini-api/docs)
 - **Groq** — second reviewer and Whisper transcription. [docs](https://console.groq.com/docs)
-- **Resend** — confirmation emails. [docs](https://resend.com/docs)
+- **nodemailer (SMTP)** — confirmation emails, sent through Gmail with an app password or any SMTP service. [docs](https://nodemailer.com/)
 - **Vitest + Testing Library** — tests. [docs](https://vitest.dev)
 - **Inter** font via `next/font`.
 
@@ -49,7 +49,7 @@ Unverified: current Gemini and Groq model names (`GEMINI_MODEL=gemini-flash-lite
 
 ## Where It Runs and How Someone Tries It
 - **Runtime:** Node.js (the old project ran on v24) with `npm install`, then `npm run dev`, then open http://localhost:3000.
-- **Keys needed (in `.env.local`, never committed):** `GEMINI_API_KEY`, `GROQ_API_KEY`, `AUTH_SECRET`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_GITHUB_ID/SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`, `GEMINI_MODEL`, `GROQ_MODEL`. The repo ships only `.env.example` with placeholders.
+- **Keys needed (in `.env.local`, never committed):** `GEMINI_API_KEY`, `GROQ_API_KEY`, `AUTH_SECRET`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_GITHUB_ID/SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SMTP_USER`, `SMTP_PASSWORD` (optional `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `EMAIL_FROM`), `GEMINI_MODEL`, `GROQ_MODEL`. The repo ships only `.env.example` with placeholders.
 - **Database setup:** run `supabase/schema.sql` in a fresh Supabase project's SQL editor.
 - **Demo recording:** run locally and record: pick a track, answer by voice and in writing, show a review, the results/debrief, and the history chart with a few sessions. Works in Chrome (best speech support).
 - **Submission:** a short demo video and a public GitHub repo are required. Vercel deployment is optional and planned by the learner after the app works; it does not replace the video.
@@ -149,7 +149,7 @@ intervue-learn/
 - **Gemini** — called from `lib/gemini.ts` with the server-held key; request: prompt + JSON response schema; response: structured review fields (score, summary, strengths, areasForImprovement, focusNext, strongerVersion, followUpQuestion, howTheyAnswered, toneAnalysis, questionConnection). Free tier is rate-limited. [docs](https://ai.google.dev/gemini-api/docs)
 - **Groq** — chat model as second reviewer and Whisper for transcription; free key, rate-limited. [docs](https://console.groq.com/docs)
 - **Supabase** — service-role key used only server-side. Free tier. [docs](https://supabase.com/docs)
-- **Resend** — sends 6-digit confirmation codes; testing sender only reaches the account email until a domain is verified. [docs](https://resend.com/docs)
+- **SMTP (nodemailer)** — sends 6-digit confirmation codes. Defaults to Gmail over SSL with an app password; works with any SMTP service via `SMTP_HOST`/`SMTP_PORT`. Gmail limits daily sends.
 - **Google and GitHub OAuth** — client ID and secret per provider, with `http://localhost:3000/api/auth/callback/<provider>` as the redirect. [Google](https://console.cloud.google.com/apis/credentials), [GitHub](https://github.com/settings/developers)
 - Specific endpoints and response shapes will be verified against current docs at the start of each build step; nothing here implies a lookup has happened.
 

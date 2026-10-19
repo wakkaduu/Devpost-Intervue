@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Intervue Spec</title>
+<style>
+:root{--bg:#23382B;--card:#E2ECE5;--fg:#1F2933;--on:#EEF5F0;--ac:#E69F00;--em:#6ee7b7;--bd:#B8CEBF}
+body{margin:0;background:var(--bg);color:var(--on);font:16px/1.55 Inter,system-ui,sans-serif}
+main{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+h1{margin:0 0 4px}h2{color:var(--em);margin:32px 0 8px;font-size:1.15rem}
+.sub{color:#BCD0C4}.badge{background:var(--ac);color:#131E19;border-radius:99px;padding:2px 10px;font-size:.8rem;vertical-align:middle}
+.card,details{background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:14px;padding:12px 16px;margin:8px 0}
+summary{cursor:pointer;font-weight:700}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.steps button{border:0;border-radius:99px;padding:8px 14px;background:#344E41;color:var(--on);cursor:pointer;font:inherit;min-height:40px}
+.steps button[aria-pressed=true]{background:var(--ac);color:#131E19;font-weight:700}
+svg{width:100%;height:auto}svg text{fill:#1F2933;font:12px Inter,system-ui,sans-serif}
+.b{fill:#fff;stroke:#344E41;stroke-width:1.5}.s{fill:#FDF2DC;stroke:#E69F00;stroke-width:1.5}.d{fill:#DCE6E0;stroke:#496B58;stroke-width:1.5}
+.hl{stroke:#E69F00!important;stroke-width:4!important}
+code{background:#fff;border-radius:4px;padding:0 5px;font-size:.9em}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+</style></head><body><main>
+<h1>Intervue — Technical Spec <span class="badge">approved</span></h1>
+<p class="sub">Same stack as your first build, fresh Supabase project, server-only AI keys. Core first, extras added one verified step at a time.</p>
+
+<h2>The architecture</h2>
+<div class="card">
+<svg viewBox="0 0 780 300" role="img" aria-label="Browser talks to Next.js server routes, which call Gemini, Groq, Supabase, Resend and OAuth providers">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="#344E41"/></marker></defs>
+<rect class="b" id="n1" x="10" y="100" width="170" height="100" rx="10"/><text x="95" y="125" text-anchor="middle" font-weight="700">Browser (front end)</text><text x="95" y="145" text-anchor="middle">Home, interview, results</text><text x="95" y="162" text-anchor="middle">live speech + read-aloud</text><text x="95" y="179" text-anchor="middle">guest history (localStorage)</text>
+<rect class="s" id="n2" x="270" y="60" width="210" height="180" rx="10"/><text x="375" y="85" text-anchor="middle" font-weight="700">Your server (API routes)</text><text x="375" y="110" text-anchor="middle">/api/review</text><text x="375" y="128" text-anchor="middle">/api/review/summary</text><text x="375" y="146" text-anchor="middle">/api/transcribe</text><text x="375" y="164" text-anchor="middle">/api/history</text><text x="375" y="182" text-anchor="middle">/api/auth/*</text><text x="375" y="215" text-anchor="middle">holds all secret keys</text>
+<rect class="d" id="n3" x="580" y="10" width="190" height="44" rx="8"/><text x="675" y="37" text-anchor="middle">Gemini → Groq → basic grader</text>
+<rect class="d" id="n4" x="580" y="70" width="190" height="44" rx="8"/><text x="675" y="97" text-anchor="middle">Groq Whisper (transcribe)</text>
+<rect class="d" id="n5" x="580" y="130" width="190" height="44" rx="8"/><text x="675" y="157" text-anchor="middle">Supabase (users, sessions)</text>
+<rect class="d" id="n6" x="580" y="190" width="190" height="44" rx="8"/><text x="675" y="217" text-anchor="middle">Resend (confirmation email)</text>
+<rect class="d" id="n7" x="580" y="250" width="190" height="44" rx="8"/><text x="675" y="277" text-anchor="middle">Google / GitHub sign-in</text>
+<path d="M180 150H268M480 100L578 32M480 120L578 92M480 150L578 152M480 180L578 212M480 205L578 272" stroke="#344E41" stroke-width="1.5" fill="none" marker-end="url(#a)"/>
+</svg></div>
+
+<h2>Follow one answer through the system</h2>
+<div class="steps" id="st"></div>
+<div class="card" id="out"></div>
+
+<h2>The AI review, in the background</h2>
+<div class="card">Your one open question. <code>POST /api/review</code> → validate and rate-limit → build the prompt (question, answer, earlier feedback, rules like "quote what they said") → Gemini (12 s limit) → Groq → built-in basic grader → structured feedback back to the browser. Check during the build: the response's <code>source</code> is <code>ai</code> or <code>basic</code>, and server logs name the provider.</div>
+
+<h2>Components</h2>
+<details><summary>Home and track picker</summary><code>app/page.tsx</code>, <code>CategorySidebar</code>, <code>lib/questions.ts</code> · 52 tracks from <code>data/questions.json</code></details>
+<details><summary>Interview screen and browser speech</summary><code>app/interview/page.tsx</code>, <code>useSpeechRecognition</code>, <code>useAudioRecorder</code>, <code>speech-synthesis</code>, autosave in <code>session-draft</code></details>
+<details><summary>Delivery feedback</summary><code>lib/speech-metrics.ts</code> (WPM, fillers), <code>LiveDeliveryHUD</code></details>
+<details><summary>AI review, debrief, transcription</summary><code>api/review</code>, <code>lib/evaluator</code>, <code>gemini</code>, <code>groq-llm</code>, <code>api/review/summary</code>, <code>api/transcribe</code></details>
+<details><summary>Results, history, chart</summary><code>app/summary</code>, <code>app/history</code>, <code>ScoreTrendChart</code>, <code>progress-trend</code>, <code>api/history</code>, <code>guest-storage</code></details>
+<details><summary>Accounts</summary><code>auth.ts</code>, <code>app/login</code>, <code>api/auth/*</code>, <code>lib/db</code>, <code>email</code>, <code>security/*</code></details>
+
+<h2>Where data lives</h2>
+<details open><summary>Supabase (fresh project)</summary><code>users</code> and <code>interview_sessions</code> (entries stored as JSON). No pre-seeded demo account.</details>
+<details><summary>Browser sticky notes</summary>last mode, in-progress draft (24 h), guest sessions, read-aloud preferences.</details>
+
+<h2>Run it</h2>
+<div class="card"><code>npm install</code>, fill <code>.env.local</code>, run <code>supabase/schema.sql</code> in your new project, <code>npm run dev</code>, open <code>localhost:3000</code> in Chrome and record the demo. Vercel is optional and does not replace the video or the public repo.</div>
+
+<h2>Failure modes and simplifications</h2>
+<details><summary>If it breaks</summary>AI down → basic feedback notice + retry. Mic denied → typed fallback. Save fails → results stay on screen; saves are idempotent.</details>
+<details><summary>Simplified</summary>Browser voice instead of ElevenLabs (it was never used). No demo-account seed in a public repo. No user-facing API-key modal.</details>
+<details><summary>To verify early in the build</summary>Gemini and Groq model names and limits; next-auth v5 beta with the chosen Next version; the old repo's exposed ElevenLabs key should be revoked.</details>
+<p class="sub">Full detail and file tree: spec.md (canonical).</p>
+</main>
+<script>
+const S=[["Pick a track and mode","Home reads the track list and last mode, then goes to /interview.","n1"],
+["Answer","Browser speech gives a live transcript; the draft autosaves to localStorage.","n1"],
+["Send for review","The browser posts question, answer and track to /api/review.","n2"],
+["Ask the AI","The server builds the prompt and tries Gemini, then Groq, then the basic grader.","n3"],
+["Results","The browser averages scores and asks /api/review/summary for a debrief.","n2"],
+["Save","Signed in: /api/history writes to Supabase. Guest: localStorage.","n5"],
+["History chart","The chart plots each session's average and shows change since your first.","n1"]];
+const st=document.getElementById('st'),out=document.getElementById('out');
+function show(i){[...st.children].forEach((b,j)=>b.setAttribute('aria-pressed',i===j));
+out.innerHTML='<b>'+(i+1)+'. '+S[i][0]+'</b><br>'+S[i][1];
+document.querySelectorAll('rect[id^=n]').forEach(r=>r.classList.toggle('hl',r.id===S[i][2]));}
+S.forEach((s,i)=>{const b=document.createElement('button');b.textContent=(i+1)+'. '+s[0];b.onclick=()=>show(i);st.appendChild(b)});show(0);
+</script></body></html>

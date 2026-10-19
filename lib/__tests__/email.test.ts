@@ -1,81 +1,95 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { sendConfirmationEmail } from "@/lib/email";
+import { readSmtpConfig, sendConfirmationEmail, type EmailDeps } from "@/lib/email";
 
-const env = { ...process.env };
+const env = (over: Record<string, string | undefined> = {}) => ({ SMTP_USER: "intervue@gmail.com", SMTP_PASSWORD: "abcd efgh ijkl mnop", ...over });
+const deps = (e: Record<string, string | undefined>, sendMail = vi.fn(async () => ({}))) => {
+  const createTransport = vi.fn(() => ({ sendMail }));
+  return { d: { createTransport, env: e } as unknown as EmailDeps, sendMail, createTransport };
+};
+const msg = { to: "a@b.co", name: "Sam", code: "123456" };
+
 beforeEach(() => {
   vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(console, "warn").mockImplementation(() => {});
   vi.spyOn(console, "log").mockImplementation(() => {});
 });
-afterEach(() => {
-  process.env = { ...env };
-  vi.restoreAllMocks();
-  vi.unstubAllGlobals();
+afterEach(() => vi.restoreAllMocks());
+
+describe("readSmtpConfig", () => {
+  it("defaults to Gmail over SSL, sending from the login address", () => {
+    expect(readSmtpConfig(env())).toEqual({
+      host: "smtp.gmail.com", port: 465, secure: true, user: "intervue@gmail.com", pass: "abcdefghijklmnop", from: "Intervue <intervue@gmail.com>",
+    });
+  });
+  it("strips the spaces Google puts in app passwords", () => {
+    expect(readSmtpConfig(env({ SMTP_PASSWORD: "  abcd efgh  ijkl mnop " }))!.pass).toBe("abcdefghijklmnop");
+  });
+  it("uses a custom server, port, security mode and sender", () => {
+    const c = readSmtpConfig(env({ SMTP_HOST: "smtp.example.com", SMTP_PORT: "587", EMAIL_FROM: "Hello <hi@example.com>" }))!;
+    expect(c).toMatchObject({ host: "smtp.example.com", port: 587, secure: false, from: "Hello <hi@example.com>" });
+    expect(readSmtpConfig(env({ SMTP_PORT: "587", SMTP_SECURE: "true" }))!.secure).toBe(true);
+  });
+  it("is null without a username and password", () => {
+    expect(readSmtpConfig({})).toBeNull();
+    expect(readSmtpConfig({ SMTP_USER: "a@b.co" })).toBeNull();
+    expect(readSmtpConfig({ SMTP_PASSWORD: "x" })).toBeNull();
+  });
 });
 
 describe("sendConfirmationEmail", () => {
-  it("sends through Resend with the key in the header and the code in the message", async () => {
-    process.env.RESEND_API_KEY = "re_test";
-    process.env.EMAIL_FROM = "Intervue <onboarding@resend.dev>";
-    const fetchMock = vi.fn(async () => ({ ok: true, text: async () => "" }));
-    vi.stubGlobal("fetch", fetchMock);
-    expect(await sendConfirmationEmail({ to: "a@b.co", name: "Sam", code: "123456" })).toEqual({ ok: true });
-    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe("https://api.resend.com/emails");
-    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer re_test");
-    const body = JSON.parse(init.body as string);
-    expect(body).toMatchObject({ from: "Intervue <onboarding@resend.dev>", to: ["a@b.co"] });
-    expect(body.subject).toContain("123456");
-    expect(body.text).toContain("123456");
+  it("sends the code over SMTP with sensible timeouts", async () => {
+    const { d, sendMail, createTransport } = deps(env());
+    expect(await sendConfirmationEmail(msg, d)).toEqual({ ok: true });
+    expect(createTransport).toHaveBeenCalledWith(expect.objectContaining({ host: "smtp.gmail.com", port: 465, secure: true, auth: { user: "intervue@gmail.com", pass: "abcdefghijklmnop" }, connectionTimeout: 10_000 }));
+    const mail = (sendMail.mock.calls[0] as unknown as [Record<string, string>])[0];
+    expect(mail).toMatchObject({ from: "Intervue <intervue@gmail.com>", to: "a@b.co" });
+    expect(mail.subject).toContain("123456");
+    expect(mail.text).toContain("123456");
+    expect(mail.html).toContain("123456");
   });
 
   it("escapes the name so it can't inject HTML into the email", async () => {
-    process.env.RESEND_API_KEY = "re_test";
-    const fetchMock = vi.fn(async () => ({ ok: true, text: async () => "" }));
-    vi.stubGlobal("fetch", fetchMock);
-    await sendConfirmationEmail({ to: "a@b.co", name: '<img src=x onerror="alert(1)">', code: "123456" });
-    const html = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string).html as string;
+    const { d, sendMail } = deps(env());
+    await sendConfirmationEmail({ ...msg, name: '<img src=x onerror="alert(1)">' }, d);
+    const html = (sendMail.mock.calls[0] as unknown as [{ html: string }])[0].html;
     expect(html).not.toContain("<img");
     expect(html).toContain("&lt;img");
   });
 
-  it("returns a generic failure, without provider details, when Resend rejects it", async () => {
-    process.env.RESEND_API_KEY = "re_test";
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 403, text: async () => "domain not verified: secret-detail" })));
-    const r = await sendConfirmationEmail({ to: "a@b.co", name: "Sam", code: "123456" });
+  it("returns a generic failure that doesn't leak the server's message, and logs the reason for the developer", async () => {
+    const boom = vi.fn(async () => { throw Object.assign(new Error("535 secret-detail"), { code: "EAUTH" }); });
+    const { d } = deps(env({ NODE_ENV: "production" }), boom);
+    const r = await sendConfirmationEmail(msg, d);
     expect(r.ok).toBe(false);
     expect(JSON.stringify(r)).not.toContain("secret-detail");
+    expect((console.error as any).mock.calls.flat().join(" ")).toMatch(/app password/);
+    expect((console.error as any).mock.calls.flat().join(" ")).not.toContain("abcdefghijklmnop");
   });
 
-  it("in development, prints the code to the server log when Resend's test sender refuses the recipient", async () => {
-    process.env.RESEND_API_KEY = "re_test";
-    (process.env as Record<string, string>).NODE_ENV = "development";
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 403, text: async () => "You can only send testing emails to your own email address. Please verify a domain" })));
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const r = await sendConfirmationEmail({ to: "other@example.com", name: "Sam", code: "654321" });
-    expect(r.ok).toBe(false); // the person is still told the email could not be sent
-    expect(warn.mock.calls.flat().join(" ")).toContain("654321");
+  it("never logs the SMTP password", async () => {
+    const { d } = deps(env({ NODE_ENV: "development" }), vi.fn(async () => { throw new Error("connect ETIMEDOUT"); }));
+    await sendConfirmationEmail(msg, d);
+    const all = [...(console.error as any).mock.calls, ...(console.warn as any).mock.calls, ...(console.log as any).mock.calls].flat().join(" ");
+    expect(all).not.toContain("abcdefghijklmnop");
   });
 
-  it("never prints the code in production", async () => {
-    process.env.RESEND_API_KEY = "re_test";
-    (process.env as Record<string, string>).NODE_ENV = "production";
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 403, text: async () => "You can only send testing emails to your own email address. Please verify a domain" })));
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
-    await sendConfirmationEmail({ to: "other@example.com", name: "Sam", code: "654321" });
-    expect([...warn.mock.calls, ...log.mock.calls].flat().join(" ")).not.toContain("654321");
+  it("in development, a failed send prints the code in the server log so sign-up can still be tested", async () => {
+    const { d } = deps(env({ NODE_ENV: "development" }), vi.fn(async () => { throw new Error("ETIMEDOUT"); }));
+    const r = await sendConfirmationEmail(msg, d);
+    expect(r.ok).toBe(false); // the person is still told it could not be sent
+    expect((console.warn as any).mock.calls.flat().join(" ")).toContain("123456");
   });
 
-  it("returns a failure when the network is down", async () => {
-    process.env.RESEND_API_KEY = "re_test";
-    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
-    expect((await sendConfirmationEmail({ to: "a@b.co", name: "Sam", code: "123456" })).ok).toBe(false);
+  it("in production, a failed send never prints the code", async () => {
+    const { d } = deps(env({ NODE_ENV: "production" }), vi.fn(async () => { throw new Error("ETIMEDOUT"); }));
+    await sendConfirmationEmail(msg, d);
+    const all = [...(console.error as any).mock.calls, ...(console.warn as any).mock.calls, ...(console.log as any).mock.calls].flat().join(" ");
+    expect(all).not.toContain("123456");
   });
 
-  it("without a key, logs the code in development but fails in production", async () => {
-    delete process.env.RESEND_API_KEY;
-    expect(await sendConfirmationEmail({ to: "a@b.co", name: "Sam", code: "123456" })).toEqual({ ok: true });
-    (process.env as Record<string, string>).NODE_ENV = "production";
-    expect((await sendConfirmationEmail({ to: "a@b.co", name: "Sam", code: "123456" })).ok).toBe(false);
+  it("without SMTP settings: logs the code in development, fails in production", async () => {
+    expect(await sendConfirmationEmail(msg, deps({ NODE_ENV: "development" }).d)).toEqual({ ok: true });
+    expect((console.log as any).mock.calls.flat().join(" ")).toContain("123456");
+    expect((await sendConfirmationEmail(msg, deps({ NODE_ENV: "production" }).d)).ok).toBe(false);
   });
 });

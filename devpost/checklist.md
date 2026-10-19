@@ -179,3 +179,4 @@ Reflection: [offered/answered/declined/already covered — personal answer belon
 Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
 
 ## Revisions
+- Confirmation email sender changed from Resend to nodemailer over SMTP (Gmail app password by default) — the learner chose this during final review after Resend's free sender refused to deliver to any address except the account owner's, which blocked normal sign-ups; the spec's Stack, External Services and key list were updated to match.
