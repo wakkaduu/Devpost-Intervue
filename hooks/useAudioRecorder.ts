@@ -11,6 +11,9 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
   const [isSupported, setIsSupported] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  /** How loud the microphone is right now, 0 to 1. Lets the screen show that the voice is being picked up. */
+  const [level, setLevel] = useState(0);
+  const meterRef = useRef<{ raf: number; ctx: AudioContext } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [autoStopped, setAutoStopped] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -26,10 +29,46 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
   }, []);
 
   const release = useCallback(() => {
+    if (meterRef.current) {
+      cancelAnimationFrame(meterRef.current.raf);
+      meterRef.current.ctx.close().catch(() => {});
+      meterRef.current = null;
+      setLevel(0);
+    }
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+  }, []);
+
+  /** A tiny level meter. Failing to build it never affects recording. */
+  const startMeter = useCallback((stream: MediaStream) => {
+    const Ctx = typeof window !== "undefined" ? (window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext) : undefined;
+    if (!Ctx) return;
+    try {
+      const ctx = new Ctx();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      const data = new Uint8Array(analyser.fftSize);
+      let last = 0;
+      const state = { raf: 0, ctx };
+      const tick = () => {
+        analyser.getByteTimeDomainData(data);
+        let peak = 0;
+        for (const v of data) peak = Math.max(peak, Math.abs(v - 128));
+        const next = Math.min(1, peak / 64);
+        if (Math.abs(next - last) > 0.05) {
+          last = next;
+          setLevel(next); // only when it visibly changes, to keep re-renders few
+        }
+        state.raf = requestAnimationFrame(tick);
+      };
+      state.raf = requestAnimationFrame(tick);
+      meterRef.current = state;
+    } catch {
+      // no meter, still records
+    }
   }, []);
 
   const start = useCallback(async () => {
@@ -39,6 +78,7 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
+      startMeter(stream);
       const mimeType = TYPES.find((t) => MediaRecorder.isTypeSupported?.(t));
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
@@ -71,7 +111,7 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
             : "Couldn't start the microphone. Type your answer instead."
       );
     }
-  }, [release]);
+  }, [release, startMeter]);
 
   /** Stops recording and resolves with the audio, or null if nothing was captured. */
   const stop = useCallback((): Promise<Blob | null> => {
@@ -92,5 +132,5 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
     }
   }, [release]);
 
-  return { isSupported, isRecording, isStarting, error, autoStopped, start, stop };
+  return { isSupported, isRecording, isStarting, level, error, autoStopped, start, stop };
 }

@@ -9,7 +9,7 @@ export const MAX_RETRIES = 3;
 const FATAL_ERRORS: Record<string, { reason: "denied" | "no-mic" | "network"; message: string }> = {
   "not-allowed": { reason: "denied", message: "Microphone access was denied. Allow the microphone in your browser settings, or type your answer instead." },
   "audio-capture": { reason: "no-mic", message: "No microphone was found. Connect one, or type your answer instead." },
-  network: { reason: "network", message: "The browser's speech service could not be reached. You can record audio for us to transcribe, or type your answer." },
+  network: { reason: "network", message: "The browser's speech service could not be reached. Please type your answer, or try Google Chrome." },
 };
 
 function getApi(): typeof SpeechRecognition | undefined {
@@ -119,7 +119,7 @@ export function useSpeechRecognition() {
     const Api = getApi();
     if (!Api) {
       setFatal("unsupported");
-      setError("This browser can't transcribe speech live. You can record audio for us to transcribe, or type your answer.");
+      setError("This browser can't transcribe speech live. Please type your answer, or try Google Chrome.");
       return;
     }
     if (phaseRef.current !== "idle") return;
