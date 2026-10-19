@@ -48,6 +48,18 @@ describe("sendConfirmationEmail", () => {
     expect(mail.html).toContain("123456");
   });
 
+  it("requires encryption before sending the password on a STARTTLS port, except for a local test server", async () => {
+    const remote = deps(env({ SMTP_HOST: "smtp-relay.brevo.com", SMTP_PORT: "587" }));
+    await sendConfirmationEmail(msg, remote.d);
+    expect(remote.createTransport).toHaveBeenCalledWith(expect.objectContaining({ secure: false, requireTLS: true }));
+    const ssl = deps(env());
+    await sendConfirmationEmail(msg, ssl.d);
+    expect(ssl.createTransport).toHaveBeenCalledWith(expect.objectContaining({ secure: true, requireTLS: false }));
+    const local = deps(env({ SMTP_HOST: "127.0.0.1", SMTP_PORT: "2525", SMTP_SECURE: "false" }));
+    await sendConfirmationEmail(msg, local.d);
+    expect(local.createTransport).toHaveBeenCalledWith(expect.objectContaining({ requireTLS: false }));
+  });
+
   it("escapes the name so it can't inject HTML into the email", async () => {
     const { d, sendMail } = deps(env());
     await sendConfirmationEmail({ ...msg, name: '<img src=x onerror="alert(1)">' }, d);

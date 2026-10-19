@@ -53,11 +53,16 @@ function transportFor(config: SmtpConfig, deps: EmailDeps) {
   return t;
 }
 
+const isLocalHost = (host: string) => ["localhost", "127.0.0.1", "::1"].includes(host);
+
 function transportOptions(c: SmtpConfig): SMTPTransport.Options {
   return {
     host: c.host,
     port: c.port,
     secure: c.secure,
+    // On a STARTTLS port (such as 587) refuse to send the password unless the connection is encrypted first.
+    // A mail server on this same machine (used for testing) is the only exception.
+    requireTLS: !c.secure && !isLocalHost(c.host),
     auth: { user: c.user, pass: c.pass },
     // Don't let a stuck mail server hold a sign-up request open.
     connectionTimeout: 10_000,
