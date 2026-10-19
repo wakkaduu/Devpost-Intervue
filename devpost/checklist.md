@@ -49,7 +49,7 @@ Build mode: learn
   Learner check: In Chrome, answer one question by voice and confirm the transcript, pace and filler feedback appear; deny the mic once to see the fallback.
   Commit: `Add voice answers and delivery feedback`
 
-- [ ] **5. AI debrief across all answers**
+- [x] **5. AI debrief across all answers**
   Becomes usable: Results includes a debrief with patterns, best and weakest answer, and what to fix first.
   Why now: Second half of the kernel's insight; reuses the review pipeline, so it is cheap now.
   PRD ref: `prd.md > Results and debrief`

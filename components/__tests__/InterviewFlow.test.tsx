@@ -16,11 +16,20 @@ const review = (score: number) => ({
   },
 });
 
-let fetchMock: ReturnType<typeof vi.fn>;
+const DEBRIEF = {
+  overview: "Solid but you skip results.", patterns: ["You never state the outcome"],
+  bestAnswer: { number: 1, why: "Clear ownership" }, weakestAnswer: { number: 2, why: "No result" }, fixFirst: "End every answer with the result.",
+};
+
+let fetchMock: ReturnType<typeof vi.fn<(url: string, init?: any) => Promise<any>>>;
 beforeEach(() => {
   push.mockClear();
   let n = 0;
-  fetchMock = vi.fn(async () => ({ ok: true, json: async () => review([8, 6][n++ % 2]) }));
+  fetchMock = vi.fn(async (url: string, _init?: any) =>
+    url === "/api/review/summary"
+      ? { ok: true, json: async () => ({ debrief: DEBRIEF }) }
+      : { ok: true, json: async () => review([8, 6][n++ % 2]) }
+  );
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -51,8 +60,50 @@ describe("interview session", () => {
     await userEvent.click(screen.getByRole("button", { name: "End early" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/summary"));
     await waitFor(() => expect(screen.getByText("Almost there")).toBeInTheDocument()); // (8+6)/2 = 7
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls.filter((c) => c[0] === "/api/review")).toHaveLength(2);
     expect(screen.getByRole("img", { name: "Score 7 out of 10" })).toBeInTheDocument();
+  });
+
+  it("writes a debrief once the reviews finish, with a request built from reviewed answers", async () => {
+    setup();
+    await userEvent.type(await screen.findByLabelText("Your answer"), "first answer");
+    await userEvent.click(screen.getByRole("button", { name: "Next question" }));
+    await userEvent.type(await screen.findByLabelText("Your answer"), "second answer");
+    await userEvent.click(screen.getByRole("button", { name: "End early" }));
+    expect(await screen.findByText("You never state the outcome")).toBeInTheDocument();
+    expect(screen.getByText("End every answer with the result.")).toBeInTheDocument();
+    const call = fetchMock.mock.calls.find((c) => c[0] === "/api/review/summary")!;
+    const body = JSON.parse(call[1].body);
+    expect(body.entries).toHaveLength(2);
+    expect(body.entries[0]).toMatchObject({ answer: "first answer", score: 8, focusNext: "focus" });
+    expect(fetchMock.mock.calls.filter((c) => c[0] === "/api/review/summary")).toHaveLength(1);
+  });
+
+  it("explains that one answer is too few for a debrief", async () => {
+    setup();
+    await userEvent.type(await screen.findByLabelText("Your answer"), "only answer");
+    await userEvent.click(screen.getByRole("button", { name: "End early" }));
+    expect(await screen.findByText(/at least two answers reviewed/)).toBeInTheDocument();
+    expect(fetchMock.mock.calls.some((c) => c[0] === "/api/review/summary")).toBe(false);
+  });
+
+  it("offers a retry when the debrief fails", async () => {
+    const base = fetchMock.getMockImplementation()! as (url: string, init?: unknown) => Promise<any>;
+    let failed = false;
+    fetchMock.mockImplementation(async (url: string, init?: unknown) => {
+      if (url === "/api/review/summary" && !failed) {
+        failed = true;
+        return { ok: false, json: async () => ({ error: "The debrief is unavailable right now. Please try again." }) };
+      }
+      return base(url, init);
+    });
+    setup();
+    await userEvent.type(await screen.findByLabelText("Your answer"), "first answer");
+    await userEvent.click(screen.getByRole("button", { name: "Next question" }));
+    await userEvent.type(await screen.findByLabelText("Your answer"), "second answer");
+    await userEvent.click(screen.getByRole("button", { name: "End early" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Retry debrief" }));
+    expect(await screen.findByText("You never state the outcome")).toBeInTheDocument();
   });
 
   it("ending early with nothing typed shows no answers submitted", async () => {

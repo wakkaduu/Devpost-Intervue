@@ -74,3 +74,13 @@ export async function requestGemini(request: ReviewRequest, apiKey: string): Pro
   }
   throw lastError;
 }
+
+/** Runs any prompt through Gemini in JSON mode and returns the parsed value. Throws on failure. */
+export async function requestGeminiJson(prompt: string, apiKey: string, schema: ObjectSchema): Promise<unknown> {
+  const model = new GoogleGenerativeAI(apiKey).getGenerativeModel({ model: GEMINI_MODEL });
+  const result = await model.generateContent({
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: { responseMimeType: "application/json", responseSchema: schema, temperature: 0.3 },
+  });
+  return JSON.parse(result.response.text());
+}

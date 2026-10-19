@@ -48,3 +48,27 @@ export interface SessionEntry {
   feedback?: Feedback;
   error?: string;
 }
+
+/** One reviewed answer, as sent to the debrief. */
+export interface DebriefEntry {
+  question: string;
+  answer: string;
+  score: number;
+  summary: string;
+  focusNext: string;
+}
+
+export interface DebriefRequest {
+  category: string;
+  entries: DebriefEntry[];
+}
+
+export interface Debrief {
+  overview: string;
+  patterns: string[];
+  /** 1-based position among the reviewed answers. */
+  bestAnswer: { number: number; why: string };
+  weakestAnswer: { number: number; why: string };
+  fixFirst: string;
+  source?: "ai";
+}

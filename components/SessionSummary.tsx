@@ -1,17 +1,31 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import DeliveryPanel from "@/components/DeliveryPanel";
 import FeedbackPanel from "@/components/FeedbackPanel";
+import SessionDebriefCard, { type DebriefView } from "@/components/SessionDebriefCard";
 import ScoreRing from "@/components/ScoreRing";
 import Button, { buttonClasses } from "@/components/ui/Button";
 import { useSession } from "@/context/SessionContext";
 import { splitTrackName } from "@/lib/questions";
+import { MIN_DEBRIEF_ENTRIES } from "@/lib/debrief";
 import { averageScore, formatDuration } from "@/lib/session-logic";
 import { scoreVerdict } from "@/lib/score-verdict";
 
 export default function SessionSummary() {
-  const { session, retry } = useSession();
+  const { session, retry, requestDebrief } = useSession();
+
+  const reviewedCount = session?.entries.filter((e) => e.status === "done").length ?? 0;
+  const anyLoading = session?.entries.some((e) => e.status === "loading") ?? false;
+  const debriefState = session?.debrief;
+  // Write the debrief once every review has settled. A retried review that adds an answer triggers a fresh one.
+  const needsDebrief =
+    !!session?.finished && !anyLoading && reviewedCount >= MIN_DEBRIEF_ENTRIES &&
+    (!debriefState || (debriefState.status !== "loading" && debriefState.forCount !== reviewedCount));
+  useEffect(() => {
+    if (needsDebrief) requestDebrief();
+  }, [needsDebrief, requestDebrief]);
 
   if (!session || !session.finished) {
     return (
@@ -27,6 +41,14 @@ export default function SessionSummary() {
   const average = averageScore(entries);
   const pending = entries.filter((e) => e.status === "loading").length;
   const failed = entries.filter((e) => e.status === "error").length;
+
+  const reviewedNumbers = entries.flatMap((e, i) => (e.status === "done" ? [i + 1] : []));
+  let debriefView: DebriefView;
+  if (reviewedCount < MIN_DEBRIEF_ENTRIES && !anyLoading) debriefView = { status: "too-few" };
+  else if (debriefState?.status === "done" && debriefState.data) debriefView = { status: "done", debrief: debriefState.data };
+  else if (debriefState?.status === "error") debriefView = { status: "error", error: debriefState.error ?? "Something went wrong." };
+  else if (debriefState?.status === "loading") debriefView = { status: "loading" };
+  else debriefView = { status: "waiting" };
 
   return (
     <div className="space-y-5">
@@ -54,6 +76,10 @@ export default function SessionSummary() {
           <Link href="/" className={buttonClasses({ size: "lg", fullWidth: true })}>Practice again</Link>
         </div>
       </section>
+
+      {entries.length > 0 && (
+        <SessionDebriefCard view={debriefView} numbers={reviewedNumbers} onRetry={requestDebrief} />
+      )}
 
       {entries.map((entry, i) => (
         <details key={i} open={i === 0} className="rounded-2xl bg-sage-100 p-4 text-darkslate-900 sm:p-5">

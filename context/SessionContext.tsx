@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
-import type { Feedback, Question, SessionEntry } from "@/types";
+import type { Debrief, Feedback, Question, SessionEntry } from "@/types";
+import { MIN_DEBRIEF_ENTRIES } from "@/lib/debrief";
 import type { PracticeMode } from "@/lib/mode-storage";
 import { pickQuestions } from "@/lib/session-logic";
 import { analyzeDelivery } from "@/lib/speech-metrics";
@@ -13,6 +14,8 @@ export interface SessionState {
   /** One entry per answered question; the next question to ask is questions[entries.length]. */
   entries: SessionEntry[];
   finished: boolean;
+  /** AI debrief across the reviewed answers; `forCount` is how many reviewed answers it was written from. */
+  debrief?: { status: "loading" | "done" | "error"; forCount: number; data?: Debrief; error?: string };
 }
 
 interface SessionApi {
@@ -24,6 +27,8 @@ interface SessionApi {
   /** Ends the session now. A non-empty draft for the current question is submitted first. */
   finish: (draft?: { answer: string; durationSec: number; spokenSeconds?: number }) => void;
   retry: (index: number) => void;
+  /** Asks for the session debrief from the answers reviewed so far. No-op while one is loading or with too few answers. */
+  requestDebrief: () => void;
 }
 
 const SessionContext = createContext<SessionApi | null>(null);
@@ -77,6 +82,41 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [patchEntry]
   );
 
+  const requestDebrief = useCallback(async () => {
+    const cur = ref.current;
+    if (!cur || cur.debrief?.status === "loading") return;
+    const reviewed = cur.entries.filter((e) => e.status === "done" && e.feedback);
+    if (reviewed.length < MIN_DEBRIEF_ENTRIES) return;
+    const owner = cur.questions;
+    const forCount = reviewed.length;
+    const setDebrief = (debrief: NonNullable<SessionState["debrief"]>) => {
+      const latest = ref.current;
+      if (latest && latest.questions === owner) update({ ...latest, debrief });
+    };
+    setDebrief({ status: "loading", forCount });
+    try {
+      const res = await fetch("/api/review/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: cur.category,
+          entries: reviewed.map((e) => ({
+            question: e.question,
+            answer: e.answer,
+            score: e.feedback!.score,
+            summary: e.feedback!.summary,
+            focusNext: e.feedback!.focusNext,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
+      setDebrief({ status: "done", forCount, data: data.debrief as Debrief });
+    } catch (err) {
+      setDebrief({ status: "error", forCount, error: err instanceof Error ? err.message : "Something went wrong." });
+    }
+  }, [update]);
+
   const begin = useCallback(
     (category: string, mode: PracticeMode) => {
       const cur = ref.current;
@@ -122,7 +162,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const retry = useCallback((index: number) => void runReview(index), [runReview]);
 
   return (
-    <SessionContext.Provider value={{ session, begin, submit: addEntry, finish, retry }}>
+    <SessionContext.Provider value={{ session, begin, submit: addEntry, finish, retry, requestDebrief }}>
       {children}
     </SessionContext.Provider>
   );
