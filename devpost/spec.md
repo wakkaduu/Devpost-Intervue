@@ -107,7 +107,7 @@ Files: `components/ui/Button.tsx`, `PasswordInput.tsx`, `AppHeader.tsx`, `ErrorM
 - `intervue_guest_sessions` — guest history; lives only in that browser.
 - `intervue_interviewer_muted` and `intervue_interviewer_speed` — read-aloud preferences.
 
-**Questions:** `data/questions.json` — 52 tracks, each with its questions; copied from the old repo (learner approved). Read at build time and on the server and client through `lib/questions.ts`.
+**Questions:** `data/questions.json` — 52 tracks, each with 15 questions (the old repo's 12 plus 3 new per track, added in the final review); a session asks 12 of them. Copied from the old repo (learner approved). Read at build time and on the server and client through `lib/questions.ts`.
 
 ## File Structure
 ```

@@ -59,6 +59,21 @@
       "id": "b12",
       "category": "Behavioral",
       "text": "Describe a situation where you felt burned out or overwhelmed. How did you maintain quality and regain balance?"
+    },
+    {
+      "id": "b13",
+      "category": "Behavioral",
+      "text": "Tell me about a time you had to learn a completely new skill or tool quickly to deliver a project. How did you approach it and how did you know you were ready?"
+    },
+    {
+      "id": "b14",
+      "category": "Behavioral",
+      "text": "Describe a situation where you noticed a mistake in your own work after it had already been delivered. What did you do, and what changed afterwards?"
+    },
+    {
+      "id": "b15",
+      "category": "Behavioral",
+      "text": "Give me an example of a time you mentored or helped a colleague improve. What was your approach, and what was the result for them and for the team?"
     }
   ],
   "Cultural Fit": [
@@ -121,6 +136,21 @@
       "id": "c12",
       "category": "Cultural Fit",
       "text": "If you could change one common corporate practice to improve workplace culture, what would it be?"
+    },
+    {
+      "id": "c13",
+      "category": "Cultural Fit",
+      "text": "How do you tell the difference between a team that is a good culture fit for you and one that merely feels comfortable, and why does that distinction matter?"
+    },
+    {
+      "id": "c14",
+      "category": "Cultural Fit",
+      "text": "Tell me about a time you disagreed with how a decision was made in an organization you belonged to. How did you voice it, and how did you act once the decision was final?"
+    },
+    {
+      "id": "c15",
+      "category": "Cultural Fit",
+      "text": "What would your previous teammates say is the one thing they would miss about working with you, and the one thing that was sometimes hard about it?"
     }
   ],
   "Situational": [
@@ -183,6 +213,21 @@
       "id": "s12",
       "category": "Situational",
       "text": "You join a project with massive legacy technical debt and no documentation. How do you build momentum without causing regressions?"
+    },
+    {
+      "id": "s13",
+      "category": "Situational",
+      "text": "A senior leader publicly criticizes a decision your team made, in front of other departments, and some of the criticism is unfair. What do you do in the moment and afterwards?"
+    },
+    {
+      "id": "s14",
+      "category": "Situational",
+      "text": "You realize the deadline you promised a client is no longer realistic, and nobody else has noticed yet. Walk me through exactly how you handle it."
+    },
+    {
+      "id": "s15",
+      "category": "Situational",
+      "text": "Your team has just completed a long project that failed to meet its goals. You are asked to lead the retrospective. How do you run it so the team learns without blame?"
     }
   ],
   "Communication & Presence": [
@@ -245,6 +290,21 @@
       "id": "cp12",
       "category": "Communication & Presence",
       "text": "When facilitating a brainstorm or retro, how do you steer off-topic conversations back toward productive outcomes?"
+    },
+    {
+      "id": "cp13",
+      "category": "Communication & Presence",
+      "text": "How do you structure a message or update so that a busy executive understands the point and the decision needed within the first thirty seconds?"
+    },
+    {
+      "id": "cp14",
+      "category": "Communication & Presence",
+      "text": "Tell me about a time you had to give a colleague direct feedback they did not want to hear. How did you prepare, what did you say, and how did they respond?"
+    },
+    {
+      "id": "cp15",
+      "category": "Communication & Presence",
+      "text": "How do you recover when you lose your train of thought or make a visible mistake during a presentation or an important conversation?"
     }
   ],
   "Medical & Health Sciences Programs (MBBS, MD, Nursing, Dentistry)": [
@@ -307,6 +367,21 @@
       "id": "med12",
       "category": "Medical & Health Sciences Programs (MBBS, MD, Nursing, Dentistry)",
       "text": "Why did you choose to apply to our specific medical/health sciences faculty and curriculum format (e.g., PBL, integrated clinicals)?"
+    },
+    {
+      "id": "med13",
+      "category": "Medical & Health Sciences Programs (MBBS, MD, Nursing, Dentistry)",
+      "text": "Describe a time you had to work closely with someone whose background, beliefs or communication style was very different from yours. What did you learn about providing care or support?"
+    },
+    {
+      "id": "med14",
+      "category": "Medical & Health Sciences Programs (MBBS, MD, Nursing, Dentistry)",
+      "text": "How would you respond to a patient who has researched their condition online and is certain your recommended treatment is wrong?"
+    },
+    {
+      "id": "med15",
+      "category": "Medical & Health Sciences Programs (MBBS, MD, Nursing, Dentistry)",
+      "text": "What do you believe is the greatest ethical challenge facing the healthcare profession over the next decade, and how do you plan to prepare for it?"
     }
   ],
   "Multiple Mini Interviews (MMI)": [
@@ -369,6 +444,21 @@
       "id": "mmi12",
       "category": "Multiple Mini Interviews (MMI)",
       "text": "[Station 12: Self-Reflection] Describe a personal mistake you made that caused harm or inconvenience to someone else. How did you take accountability and make amends?"
+    },
+    {
+      "id": "mmi13",
+      "category": "Multiple Mini Interviews (MMI)",
+      "text": "[Station 13: Honesty & Disclosure] You gave a patient the wrong dose of a non-dangerous medication during your placement, and nobody noticed. Your supervisor is busy. What do you do, and what do you say to the patient?"
+    },
+    {
+      "id": "mmi14",
+      "category": "Multiple Mini Interviews (MMI)",
+      "text": "[Station 14: Teamwork Task] You and a partner are given ten minutes to design a poster promoting hand hygiene to hospital visitors, but your partner keeps dismissing your ideas. Roleplay how you handle it."
+    },
+    {
+      "id": "mmi15",
+      "category": "Multiple Mini Interviews (MMI)",
+      "text": "[Station 15: Healthcare System] A rural clinic can afford either a full-time nurse or a part-time doctor, but not both. Which would you choose for the community, and how would you justify it?"
     }
   ],
   "Law Degree Programs (Juris Doctor, LLB)": [
@@ -431,6 +521,21 @@
       "id": "law12",
       "category": "Law Degree Programs (Juris Doctor, LLB)",
       "text": "Why is our law school's clinical program and pedagogical approach the right environment for your legal career aspirations?"
+    },
+    {
+      "id": "law13",
+      "category": "Law Degree Programs (Juris Doctor, LLB)",
+      "text": "A client confides that they intend to give false testimony at trial. What are your professional obligations, and how would you handle the conversation?"
+    },
+    {
+      "id": "law14",
+      "category": "Law Degree Programs (Juris Doctor, LLB)",
+      "text": "Should there be limits on the use of algorithmic risk scores in bail and sentencing decisions? Argue your position and address the strongest objection to it."
+    },
+    {
+      "id": "law15",
+      "category": "Law Degree Programs (Juris Doctor, LLB)",
+      "text": "Describe a time you changed your mind after being persuaded by an argument you initially opposed. What made the argument convincing, and what does it say about how you reason?"
     }
   ],
   "MBA & Graduate Business School Admissions": [
@@ -493,6 +598,21 @@
       "id": "mba12",
       "category": "MBA & Graduate Business School Admissions",
       "text": "What is one constructive feedback area from your recent performance review that you plan to address during business school?"
+    },
+    {
+      "id": "mba13",
+      "category": "MBA & Graduate Business School Admissions",
+      "text": "Tell me about a time you made a decision with incomplete data. How did you weigh the risks, and what would you do differently now?"
+    },
+    {
+      "id": "mba14",
+      "category": "MBA & Graduate Business School Admissions",
+      "text": "How do you plan to contribute to your cohort beyond the classroom, and which specific club, project or initiative would you want to lead?"
+    },
+    {
+      "id": "mba15",
+      "category": "MBA & Graduate Business School Admissions",
+      "text": "Describe a time you had to deliver results through people who did not report to you. What influenced them, and what did you learn about leadership?"
     }
   ],
   "PhD & Master’s Thesis/Research Proposal Defenses": [
@@ -555,6 +675,21 @@
       "id": "phd12",
       "category": "PhD & Master’s Thesis/Research Proposal Defenses",
       "text": "Where do you plan to publish your thesis findings, and how will this research propel your postdoctoral or academic career?"
+    },
+    {
+      "id": "phd13",
+      "category": "PhD & Master’s Thesis/Research Proposal Defenses",
+      "text": "How would you explain the importance of your research to an intelligent non-specialist in three minutes, without jargon or loss of accuracy?"
+    },
+    {
+      "id": "phd14",
+      "category": "PhD & Master’s Thesis/Research Proposal Defenses",
+      "text": "A committee member suggests your central assumption is flawed. How would you respond in the moment, and what evidence would change your mind?"
+    },
+    {
+      "id": "phd15",
+      "category": "PhD & Master’s Thesis/Research Proposal Defenses",
+      "text": "How do you decide when a line of inquiry is a dead end worth abandoning, and when it is a difficulty worth pushing through?"
     }
   ],
   "Undergraduate Competitive University Programs (Oxbridge, Ivy League)": [
@@ -617,6 +752,21 @@
       "id": "ivy12",
       "category": "Undergraduate Competitive University Programs (Oxbridge, Ivy League)",
       "text": "How will your presence enrich our residential college community outside of academic classrooms?"
+    },
+    {
+      "id": "ivy13",
+      "category": "Undergraduate Competitive University Programs (Oxbridge, Ivy League)",
+      "text": "[Thought Experiment] If a perfect simulation of the world were running on a computer, would the people inside it have genuine moral worth? Defend a position and respond to a counterargument."
+    },
+    {
+      "id": "ivy14",
+      "category": "Undergraduate Competitive University Programs (Oxbridge, Ivy League)",
+      "text": "Tell me about an idea you held strongly that you later changed your mind about. What caused the change, and how did it feel?"
+    },
+    {
+      "id": "ivy15",
+      "category": "Undergraduate Competitive University Programs (Oxbridge, Ivy League)",
+      "text": "Which problem in your chosen field do you think is underrated, and what first step would you take to understand it better?"
     }
   ],
   "Academic Scholarship & Grant Applications": [
@@ -679,6 +829,21 @@
       "id": "grant12",
       "category": "Academic Scholarship & Grant Applications",
       "text": "If this grant covers only 60% of your requested budget, how would you prioritize allocations to ensure project viability?"
+    },
+    {
+      "id": "grant13",
+      "category": "Academic Scholarship & Grant Applications",
+      "text": "How will you ensure the impact of this award continues after the funding period ends, and who else will benefit from what you produce?"
+    },
+    {
+      "id": "grant14",
+      "category": "Academic Scholarship & Grant Applications",
+      "text": "Tell me about a time a plan of yours failed or was delayed by circumstances you could not control. How did you adapt, and what did it teach you about managing a funded project?"
+    },
+    {
+      "id": "grant15",
+      "category": "Academic Scholarship & Grant Applications",
+      "text": "How will you report your progress and results back to this foundation, and what would honest bad news look like if the project struggled?"
     }
   ],
   "Study Abroad & Student Exchange Programs": [
@@ -741,6 +906,21 @@
       "id": "abroad12",
       "category": "Study Abroad & Student Exchange Programs",
       "text": "Describe your language learning plan if your host destination has a primary language other than your native tongue."
+    },
+    {
+      "id": "abroad13",
+      "category": "Study Abroad & Student Exchange Programs",
+      "text": "How will you handle a disagreement with a host family, flatmate or local classmate where cultural norms, not personalities, are the cause?"
+    },
+    {
+      "id": "abroad14",
+      "category": "Study Abroad & Student Exchange Programs",
+      "text": "What do you expect to find most difficult about studying in a different academic system, and what steps will you take in your first month to adjust?"
+    },
+    {
+      "id": "abroad15",
+      "category": "Study Abroad & Student Exchange Programs",
+      "text": "How will you stay connected to your home community while fully immersing yourself abroad, and where do you draw the line between the two?"
     }
   ],
   "Medical Residency & Fellowship Matching": [
@@ -803,6 +983,21 @@
       "id": "res12",
       "category": "Medical Residency & Fellowship Matching",
       "text": "What unique clinical strengths will you bring to our incoming resident cohort on day one of intern year?"
+    },
+    {
+      "id": "res13",
+      "category": "Medical Residency & Fellowship Matching",
+      "text": "Describe a time you advocated for a patient when it meant disagreeing with a more senior member of the team. How did you handle it, and what was the outcome?"
+    },
+    {
+      "id": "res14",
+      "category": "Medical Residency & Fellowship Matching",
+      "text": "How do you approach the responsibility of teaching and supervising medical students while still learning yourself?"
+    },
+    {
+      "id": "res15",
+      "category": "Medical Residency & Fellowship Matching",
+      "text": "Tell me about a patient you could not help or who had a poor outcome. How did it affect you, and how did you carry it forward?"
     }
   ],
   "Visa & Immigration Clearances (Student, Work, Permanent Residency)": [
@@ -865,6 +1060,21 @@
       "id": "visa12",
       "category": "Visa & Immigration Clearances (Student, Work, Permanent Residency)",
       "text": "Do you understand the legal restrictions of your visa category regarding maximum work hours and tax obligations?"
+    },
+    {
+      "id": "visa13",
+      "category": "Visa & Immigration Clearances (Student, Work, Permanent Residency)",
+      "text": "Your sponsor's financial documents show recent large deposits. Can you explain where this money came from and why it appeared at this time?"
+    },
+    {
+      "id": "visa14",
+      "category": "Visa & Immigration Clearances (Student, Work, Permanent Residency)",
+      "text": "Describe your plans if your course or contract ended earlier than expected or your circumstances changed while you are abroad. How would you respond within the rules of your visa?"
+    },
+    {
+      "id": "visa15",
+      "category": "Visa & Immigration Clearances (Student, Work, Permanent Residency)",
+      "text": "Have you stayed in or travelled to this country before? Please describe the purpose of each trip and how you complied with the conditions each time."
     }
   ],
   "Civil Service & Government Agency Appointments": [
@@ -927,6 +1137,21 @@
       "id": "gov12",
       "category": "Civil Service & Government Agency Appointments",
       "text": "Why do you seek a career in civil service governance over significantly more lucrative private sector alternatives?"
+    },
+    {
+      "id": "gov13",
+      "category": "Civil Service & Government Agency Appointments",
+      "text": "How do you ensure that a public service you design is accessible and fair to the citizens who are hardest to reach, such as those with limited digital access or language barriers?"
+    },
+    {
+      "id": "gov14",
+      "category": "Civil Service & Government Agency Appointments",
+      "text": "Describe how you would respond if a colleague asked you to give an acquaintance early information about an upcoming public tender."
+    },
+    {
+      "id": "gov15",
+      "category": "Civil Service & Government Agency Appointments",
+      "text": "How would you decide how much transparency is appropriate when publishing data that could embarrass the agency but would help the public?"
     }
   ],
   "Military & Defense Officer Selection Boards": [
@@ -989,6 +1214,21 @@
       "id": "mil12",
       "category": "Military & Defense Officer Selection Boards",
       "text": "Why should this selection board award you a coveted slot at the military officer training academy over other candidates?"
+    },
+    {
+      "id": "mil13",
+      "category": "Military & Defense Officer Selection Boards",
+      "text": "Describe a time you had to lead a group of people who were more experienced than you. How did you earn their respect?"
+    },
+    {
+      "id": "mil14",
+      "category": "Military & Defense Officer Selection Boards",
+      "text": "How do you prepare yourself and your team for a task where failure carries real consequences, and how do you recover when something goes wrong in the middle of it?"
+    },
+    {
+      "id": "mil15",
+      "category": "Military & Defense Officer Selection Boards",
+      "text": "Why is the principle of civilian control of the military important, and what would you do if you personally disagreed with a lawful political decision?"
     }
   ],
   "Law Enforcement & Emergency Services Screening": [
@@ -1051,6 +1291,21 @@
       "id": "cop12",
       "category": "Law Enforcement & Emergency Services Screening",
       "text": "What does accountability mean to you when an officer makes an honest tactical error in the line of duty?"
+    },
+    {
+      "id": "cop13",
+      "category": "Law Enforcement & Emergency Services Screening",
+      "text": "You respond to a call about a mentally ill person acting erratically in a public place, and bystanders are demanding you act quickly. How do you approach it?"
+    },
+    {
+      "id": "cop14",
+      "category": "Law Enforcement & Emergency Services Screening",
+      "text": "How do you maintain accurate and honest written reports at the end of a long and stressful shift, even when the facts do not favour you or a colleague?"
+    },
+    {
+      "id": "cop15",
+      "category": "Law Enforcement & Emergency Services Screening",
+      "text": "A member of the community you serve tells you they do not trust the police. How do you respond, and what would you do to begin earning their trust?"
     }
   ],
   "Beauty & Personality Pageants": [
@@ -1113,6 +1368,21 @@
       "id": "pageant12",
       "category": "Beauty & Personality Pageants",
       "text": "Why should the judges select you as the winner tonight among all the extraordinary contestants in this competition?"
+    },
+    {
+      "id": "pageant13",
+      "category": "Beauty & Personality Pageants",
+      "text": "How do you intend to stay authentic when you are expected to represent an organization, sponsors and a country at the same time?"
+    },
+    {
+      "id": "pageant14",
+      "category": "Beauty & Personality Pageants",
+      "text": "Describe a moment when you stood up for something unpopular. What did it cost you, and why would you do it again?"
+    },
+    {
+      "id": "pageant15",
+      "category": "Beauty & Personality Pageants",
+      "text": "If your reign ended tomorrow, what lasting change would you want to have made, and how will you start working on it from day one?"
     }
   ],
   "Competitive Debate & Model UN Selection": [
@@ -1175,6 +1445,21 @@
       "id": "mun12",
       "category": "Competitive Debate & Model UN Selection",
       "text": "Why are you seeking selection for our national collegiate debate / Model UN traveling delegation this season?"
+    },
+    {
+      "id": "mun13",
+      "category": "Competitive Debate & Model UN Selection",
+      "text": "How do you adapt your speaking style and argument structure when the judge is an experienced academic versus a lay audience?"
+    },
+    {
+      "id": "mun14",
+      "category": "Competitive Debate & Model UN Selection",
+      "text": "When your partner makes a serious error in the middle of a round, how do you correct course without undermining your team?"
+    },
+    {
+      "id": "mun15",
+      "category": "Competitive Debate & Model UN Selection",
+      "text": "As a delegate, how do you build alliances with countries whose national interests initially seem opposed to yours?"
     }
   ],
   "Startup Pitch Competitions & Accelerator Entry (e.g., Y Combinator)": [
@@ -1237,6 +1522,21 @@
       "id": "startup12",
       "category": "Startup Pitch Competitions & Accelerator Entry (e.g., Y Combinator)",
       "text": "Why do you want to join our accelerator cohort right now rather than continuing to bootstrap independently?"
+    },
+    {
+      "id": "startup13",
+      "category": "Startup Pitch Competitions & Accelerator Entry (e.g., Y Combinator)",
+      "text": "Who are your three most important early customers, how did you find them, and what did they tell you that changed your product?"
+    },
+    {
+      "id": "startup14",
+      "category": "Startup Pitch Competitions & Accelerator Entry (e.g., Y Combinator)",
+      "text": "What would have to be true for your startup to be a bad investment, and what are you doing to test whether it is?"
+    },
+    {
+      "id": "startup15",
+      "category": "Startup Pitch Competitions & Accelerator Entry (e.g., Y Combinator)",
+      "text": "Tell me about a major decision you and your co-founders disagreed on. How was it resolved, and would you resolve it the same way again?"
     }
   ],
   "Media, Journalism & Broadcast Screen Tests": [
@@ -1299,6 +1599,21 @@
       "id": "media12",
       "category": "Media, Journalism & Broadcast Screen Tests",
       "text": "Why are you the right broadcast journalist or anchor to represent our network's editorial standard and audience trust?"
+    },
+    {
+      "id": "media13",
+      "category": "Media, Journalism & Broadcast Screen Tests",
+      "text": "[Live Interview Screen Test] Your guest suddenly becomes emotional on air while describing a personal tragedy, and the producer is counting down in your earpiece. How do you respond?"
+    },
+    {
+      "id": "media14",
+      "category": "Media, Journalism & Broadcast Screen Tests",
+      "text": "How do you decide whether a story is in the public interest when publishing it could cause real harm to a private individual?"
+    },
+    {
+      "id": "media15",
+      "category": "Media, Journalism & Broadcast Screen Tests",
+      "text": "A story you reported turns out to contain a factual error that has already spread widely. How do you handle the correction, on air and off air?"
     }
   ],
   "Software Engineer / Backend Developer (Data structures, algorithms, API design, database optimization)": [
@@ -1361,6 +1676,21 @@
       "id": "se_be12",
       "category": "Software Engineer / Backend Developer (Data structures, algorithms, API design, database optimization)",
       "text": "Walk me through how you use EXPLAIN ANALYZE to optimize a slow query involving multiple joins, aggregate filters, and sorting on an unindexed column."
+    },
+    {
+      "id": "se_be13",
+      "category": "Software Engineer / Backend Developer (Data structures, algorithms, API design, database optimization)",
+      "text": "How do you design a background job system that guarantees a task runs at least once without producing duplicate side effects, such as sending the same invoice twice?"
+    },
+    {
+      "id": "se_be14",
+      "category": "Software Engineer / Backend Developer (Data structures, algorithms, API design, database optimization)",
+      "text": "Explain how you would investigate and fix a memory leak in a long-running Node.js, Java or Go service that only shows up in production after several days."
+    },
+    {
+      "id": "se_be15",
+      "category": "Software Engineer / Backend Developer (Data structures, algorithms, API design, database optimization)",
+      "text": "How do you approach designing safe database migrations on a table with hundreds of millions of rows while the application keeps serving traffic?"
     }
   ],
   "Frontend Engineer / UI Developer (Component lifecycle, state management, CSS layouts, web performance)": [
@@ -1423,6 +1753,21 @@
       "id": "fe_ui12",
       "category": "Frontend Engineer / UI Developer (Component lifecycle, state management, CSS layouts, web performance)",
       "text": "How do you capture, sanitize, and transmit client-side error telemetry to monitoring systems (e.g. Sentry) without exposing end-user personally identifiable information (PII)?"
+    },
+    {
+      "id": "fe_ui13",
+      "category": "Frontend Engineer / UI Developer (Component lifecycle, state management, CSS layouts, web performance)",
+      "text": "How do you design a form with complex validation, conditional fields and server errors so that it remains accessible and easy to use on mobile devices?"
+    },
+    {
+      "id": "fe_ui14",
+      "category": "Frontend Engineer / UI Developer (Component lifecycle, state management, CSS layouts, web performance)",
+      "text": "Walk me through how you would debug a layout that looks correct in one browser but broken in another, and how you prevent such regressions from returning."
+    },
+    {
+      "id": "fe_ui15",
+      "category": "Frontend Engineer / UI Developer (Component lifecycle, state management, CSS layouts, web performance)",
+      "text": "How do you decide what belongs in a shared component library versus a one-off component, and how do you keep the library from becoming a bottleneck?"
     }
   ],
   "Mobile App Developer - iOS / Android (App architecture, state management, memory management, offline storage)": [
@@ -1485,6 +1830,21 @@
       "id": "mob_dev12",
       "category": "Mobile App Developer - iOS / Android (App architecture, state management, memory management, offline storage)",
       "text": "What steps do you take when preparing an app release to prevent App Store Review or Google Play Policy rejections around privacy manifests and permissions?"
+    },
+    {
+      "id": "mob_dev13",
+      "category": "Mobile App Developer - iOS / Android (App architecture, state management, memory management, offline storage)",
+      "text": "How do you handle app upgrades that change the local database schema, so existing users on older versions never lose their data?"
+    },
+    {
+      "id": "mob_dev14",
+      "category": "Mobile App Developer - iOS / Android (App architecture, state management, memory management, offline storage)",
+      "text": "Describe how you would design the push notification, permissions and onboarding flow so users actually grant the permissions your app needs."
+    },
+    {
+      "id": "mob_dev15",
+      "category": "Mobile App Developer - iOS / Android (App architecture, state management, memory management, offline storage)",
+      "text": "How do you test a mobile application across many device sizes, OS versions and network conditions without an unmanageable test matrix?"
     }
   ],
   "Full-Stack Engineer (End-to-end architecture, cross-stack integration, system trade-offs)": [
@@ -1547,6 +1907,21 @@
       "id": "fs_eng12",
       "category": "Full-Stack Engineer (End-to-end architecture, cross-stack integration, system trade-offs)",
       "text": "How do you establish standardized API error handling contracts across the full stack so frontend clients can display context-specific validation messages seamlessly?"
+    },
+    {
+      "id": "fs_eng13",
+      "category": "Full-Stack Engineer (End-to-end architecture, cross-stack integration, system trade-offs)",
+      "text": "How do you design the data flow for a collaborative feature, such as a shared document or live cursor, that must stay consistent when two users edit at once?"
+    },
+    {
+      "id": "fs_eng14",
+      "category": "Full-Stack Engineer (End-to-end architecture, cross-stack integration, system trade-offs)",
+      "text": "Walk me through how you would add multi-tenancy to an existing single-tenant application, from the database to the user interface."
+    },
+    {
+      "id": "fs_eng15",
+      "category": "Full-Stack Engineer (End-to-end architecture, cross-stack integration, system trade-offs)",
+      "text": "How do you decide between building a feature yourself and adopting a third-party service, and how do you protect yourself against vendor lock-in?"
     }
   ],
   "Systems Architect / Principal Engineer (Scalability, high availability, microservices, distributed systems)": [
@@ -1609,6 +1984,21 @@
       "id": "sys_arch12",
       "category": "Systems Architect / Principal Engineer (Scalability, high availability, microservices, distributed systems)",
       "text": "How do you design schema evolution policies for event-driven message brokers (e.g. Kafka Avro / Protobuf) to guarantee backward and forward compatibility?"
+    },
+    {
+      "id": "sys_arch13",
+      "category": "Systems Architect / Principal Engineer (Scalability, high availability, microservices, distributed systems)",
+      "text": "How do you evaluate whether a team should adopt a new technology such as a new database or language, and how do you prevent unmanaged technology sprawl?"
+    },
+    {
+      "id": "sys_arch14",
+      "category": "Systems Architect / Principal Engineer (Scalability, high availability, microservices, distributed systems)",
+      "text": "Describe how you design a system to degrade gracefully under extreme load, deciding which features to shed first and how users are informed."
+    },
+    {
+      "id": "sys_arch15",
+      "category": "Systems Architect / Principal Engineer (Scalability, high availability, microservices, distributed systems)",
+      "text": "How do you communicate and defend a major architectural decision to both engineers who disagree and non-technical executives who need to fund it?"
     }
   ],
   "DevOps / Infrastructure / SRE Engineer (CI/CD pipelines, container orchestration, terraform, incident response)": [
@@ -1671,6 +2061,21 @@
       "id": "devops_sre12",
       "category": "DevOps / Infrastructure / SRE Engineer (CI/CD pipelines, container orchestration, terraform, incident response)",
       "text": "How do you write a comprehensive, blameless post-mortem document following a major outage that identifies systemic vulnerabilities without assigning personal blame?"
+    },
+    {
+      "id": "devops_sre13",
+      "category": "DevOps / Infrastructure / SRE Engineer (CI/CD pipelines, container orchestration, terraform, incident response)",
+      "text": "How do you design a safe progressive delivery process, using canary releases or feature flags, that automatically halts a rollout when error rates rise?"
+    },
+    {
+      "id": "devops_sre14",
+      "category": "DevOps / Infrastructure / SRE Engineer (CI/CD pipelines, container orchestration, terraform, incident response)",
+      "text": "Walk me through how you would reduce the cloud bill of a fast-growing platform by thirty percent without hurting reliability."
+    },
+    {
+      "id": "devops_sre15",
+      "category": "DevOps / Infrastructure / SRE Engineer (CI/CD pipelines, container orchestration, terraform, incident response)",
+      "text": "How do you manage secrets, certificates and credentials across environments so that rotation is routine rather than an emergency?"
     }
   ],
   "Cybersecurity Analyst / Penetration Tester (Threat modeling, vulnerability assessment, incident handler scenarios)": [
@@ -1733,6 +2138,21 @@
       "id": "cyber_sec12",
       "category": "Cybersecurity Analyst / Penetration Tester (Threat modeling, vulnerability assessment, incident handler scenarios)",
       "text": "How do you translate complex technical vulnerability findings into a risk-prioritized executive summary for non-technical board members and auditors?"
+    },
+    {
+      "id": "cyber_sec13",
+      "category": "Cybersecurity Analyst / Penetration Tester (Threat modeling, vulnerability assessment, incident handler scenarios)",
+      "text": "How do you design and run a phishing awareness program that measurably reduces risk instead of simply blaming employees?"
+    },
+    {
+      "id": "cyber_sec14",
+      "category": "Cybersecurity Analyst / Penetration Tester (Threat modeling, vulnerability assessment, incident handler scenarios)",
+      "text": "Walk me through how you would perform a security review of a third-party vendor that will process your customers' personal data."
+    },
+    {
+      "id": "cyber_sec15",
+      "category": "Cybersecurity Analyst / Penetration Tester (Threat modeling, vulnerability assessment, incident handler scenarios)",
+      "text": "Explain how you would respond to a report from a researcher who has found a serious vulnerability in your product and is threatening to publish it."
     }
   ],
   "Data Engineer (ETL pipelines, data warehousing, query performance tuning, data modeling)": [
@@ -1795,6 +2215,21 @@
       "id": "data_eng12",
       "category": "Data Engineer (ETL pipelines, data warehousing, query performance tuning, data modeling)",
       "text": "How do you implement data lineage and metadata catalogs across distributed enterprise data assets to empower self-service analytics safely?"
+    },
+    {
+      "id": "data_eng13",
+      "category": "Data Engineer (ETL pipelines, data warehousing, query performance tuning, data modeling)",
+      "text": "How do you design a backfill of two years of historical data into a production warehouse without disrupting existing dashboards or doubling costs?"
+    },
+    {
+      "id": "data_eng14",
+      "category": "Data Engineer (ETL pipelines, data warehousing, query performance tuning, data modeling)",
+      "text": "How do you decide between a data lake, a data warehouse and a lakehouse for an organization that needs both analytics and machine learning?"
+    },
+    {
+      "id": "data_eng15",
+      "category": "Data Engineer (ETL pipelines, data warehousing, query performance tuning, data modeling)",
+      "text": "Describe how you would make an unreliable upstream source, such as a partner API with frequent outages and malformed rows, safe to depend on."
     }
   ],
   "Data Scientist / Machine Learning Engineer (Model evaluation, feature engineering, statistical inference, live coding)": [
@@ -1857,6 +2292,21 @@
       "id": "ds_mle12",
       "category": "Data Scientist / Machine Learning Engineer (Model evaluation, feature engineering, statistical inference, live coding)",
       "text": "How do you diagnose whether an underperforming deep learning model is suffering from high bias versus high variance, and what are your prioritized remediation steps?"
+    },
+    {
+      "id": "ds_mle13",
+      "category": "Data Scientist / Machine Learning Engineer (Model evaluation, feature engineering, statistical inference, live coding)",
+      "text": "How do you decide whether a business problem should be solved with machine learning at all, or with a simpler rule-based or analytical approach?"
+    },
+    {
+      "id": "ds_mle14",
+      "category": "Data Scientist / Machine Learning Engineer (Model evaluation, feature engineering, statistical inference, live coding)",
+      "text": "Describe how you would design and monitor a model that makes decisions affecting people, such as loan approvals, to check for unfair outcomes between groups."
+    },
+    {
+      "id": "ds_mle15",
+      "category": "Data Scientist / Machine Learning Engineer (Model evaluation, feature engineering, statistical inference, live coding)",
+      "text": "A stakeholder insists on deploying a model whose accuracy you believe was inflated by data leakage. How do you demonstrate the problem and handle the disagreement?"
     }
   ],
   "Quality Assurance (QA) / Test Automation Engineer (Test strategy, automated framework design, boundary case identification)": [
@@ -1919,6 +2369,21 @@
       "id": "qa_auto12",
       "category": "Quality Assurance (QA) / Test Automation Engineer (Test strategy, automated framework design, boundary case identification)",
       "text": "When an urgent production hotfix needs deployment in 30 minutes, how do you conduct risk-based regression testing to balance release velocity with defect risk?"
+    },
+    {
+      "id": "qa_auto13",
+      "category": "Quality Assurance (QA) / Test Automation Engineer (Test strategy, automated framework design, boundary case identification)",
+      "text": "How do you decide which features deserve automated tests and which are better covered by manual exploratory testing as a team's product grows?"
+    },
+    {
+      "id": "qa_auto14",
+      "category": "Quality Assurance (QA) / Test Automation Engineer (Test strategy, automated framework design, boundary case identification)",
+      "text": "Walk me through how you would introduce a quality culture in a team that treats testing as the last step before release."
+    },
+    {
+      "id": "qa_auto15",
+      "category": "Quality Assurance (QA) / Test Automation Engineer (Test strategy, automated framework design, boundary case identification)",
+      "text": "How do you test a system that depends on third-party services, time, randomness or asynchronous events so that your tests stay reliable?"
     }
   ],
   "Product Manager (Product vision, metric prioritization, UI/UX critique, feature trade-offs)": [
@@ -1981,6 +2446,21 @@
       "id": "prod_mgr12",
       "category": "Product Manager (Product vision, metric prioritization, UI/UX critique, feature trade-offs)",
       "text": "One week before a major public launch, QA discovers a high-severity bug that cannot be fixed without a launch delay. How do you make the launch decision?"
+    },
+    {
+      "id": "prod_mgr13",
+      "category": "Product Manager (Product vision, metric prioritization, UI/UX critique, feature trade-offs)",
+      "text": "Tell me about a product decision you made that turned out to be wrong. How did you discover it, and what did you do?"
+    },
+    {
+      "id": "prod_mgr14",
+      "category": "Product Manager (Product vision, metric prioritization, UI/UX critique, feature trade-offs)",
+      "text": "How do you decide what not to build, and how do you say no to a major customer or an executive without damaging the relationship?"
+    },
+    {
+      "id": "prod_mgr15",
+      "category": "Product Manager (Product vision, metric prioritization, UI/UX critique, feature trade-offs)",
+      "text": "How would you improve activation and early retention for a product where most new users stop using it within the first week?"
     }
   ],
   "Technical Program Manager / Scrum Master (Agile processes, cross-functional alignment, timeline risk management)": [
@@ -2043,6 +2523,21 @@
       "id": "tpm_sm12",
       "category": "Technical Program Manager / Scrum Master (Agile processes, cross-functional alignment, timeline risk management)",
       "text": "How do you utilize DORA metrics (Deployment Frequency, Lead Time, Change Failure Rate, MTTR) to measure and improve developer productivity responsibly?"
+    },
+    {
+      "id": "tpm_sm13",
+      "category": "Technical Program Manager / Scrum Master (Agile processes, cross-functional alignment, timeline risk management)",
+      "text": "How do you create a realistic delivery plan for a program with many unknowns, and how do you communicate uncertainty to stakeholders who want a single date?"
+    },
+    {
+      "id": "tpm_sm14",
+      "category": "Technical Program Manager / Scrum Master (Agile processes, cross-functional alignment, timeline risk management)",
+      "text": "A team repeatedly commits to more work than it finishes in each sprint. How do you diagnose the cause and coach them to improve?"
+    },
+    {
+      "id": "tpm_sm15",
+      "category": "Technical Program Manager / Scrum Master (Agile processes, cross-functional alignment, timeline risk management)",
+      "text": "How do you run an effective cross-team planning session so that dependencies and capacity conflicts are discovered before the work starts, not after?"
     }
   ],
   "UX/UI Designer & Researcher (Design portfolio review, user testing methodology, design system implementation)": [
@@ -2105,6 +2600,21 @@
       "id": "ux_ui12",
       "category": "UX/UI Designer & Researcher (Design portfolio review, user testing methodology, design system implementation)",
       "text": "How do you measure the qualitative and quantitative impact of a design redesign using standardized metrics like the System Usability Scale (SUS)?"
+    },
+    {
+      "id": "ux_ui13",
+      "category": "UX/UI Designer & Researcher (Design portfolio review, user testing methodology, design system implementation)",
+      "text": "Walk me through how you would redesign a core flow, such as checkout or sign-up, where the data shows people are dropping off but no one knows why."
+    },
+    {
+      "id": "ux_ui14",
+      "category": "UX/UI Designer & Researcher (Design portfolio review, user testing methodology, design system implementation)",
+      "text": "How do you design for people with different abilities, devices and levels of digital skill from the beginning rather than as an afterthought?"
+    },
+    {
+      "id": "ux_ui15",
+      "category": "UX/UI Designer & Researcher (Design portfolio review, user testing methodology, design system implementation)",
+      "text": "Tell me about a design you were proud of that failed in user testing. What did you learn, and how did you change it?"
     }
   ],
   "Management Consultant (Market entry cases, profitability analysis, framework selection, brain teasers)": [
@@ -2167,6 +2677,21 @@
       "id": "mgmt_cons12",
       "category": "Management Consultant (Market entry cases, profitability analysis, framework selection, brain teasers)",
       "text": "How do you synthesize a 100-slide analytical engagement into a crisp, three-minute executive pyramid-principle takeaway for a busy Board of Directors?"
+    },
+    {
+      "id": "mgmt_cons13",
+      "category": "Management Consultant (Market entry cases, profitability analysis, framework selection, brain teasers)",
+      "text": "A consumer goods client sees sales growing but profit falling for three consecutive years. Structure how you would diagnose the cause."
+    },
+    {
+      "id": "mgmt_cons14",
+      "category": "Management Consultant (Market entry cases, profitability analysis, framework selection, brain teasers)",
+      "text": "Estimate how many electric vehicle charging points a mid-sized city needs over the next five years. Walk me through your approach and assumptions."
+    },
+    {
+      "id": "mgmt_cons15",
+      "category": "Management Consultant (Market entry cases, profitability analysis, framework selection, brain teasers)",
+      "text": "You find in the middle of a project that the client's own data contradicts the hypothesis the partner already promised the CEO. How do you handle it?"
     }
   ],
   "Investment Banking Analyst / Associate (DCF valuation, financial statement modeling, M&A mechanics)": [
@@ -2229,6 +2754,21 @@
       "id": "ib_fin12",
       "category": "Investment Banking Analyst / Associate (DCF valuation, financial statement modeling, M&A mechanics)",
       "text": "What criteria and valuation analyses are incorporated into a Fairness Opinion provided to a corporate board during a contested takeover battle?"
+    },
+    {
+      "id": "ib_fin13",
+      "category": "Investment Banking Analyst / Associate (DCF valuation, financial statement modeling, M&A mechanics)",
+      "text": "Walk me through what happens to the three financial statements when a company issues $100 of debt to repurchase $100 of its own shares."
+    },
+    {
+      "id": "ib_fin14",
+      "category": "Investment Banking Analyst / Associate (DCF valuation, financial statement modeling, M&A mechanics)",
+      "text": "How would you decide whether a company should finance an acquisition with cash, debt or stock, and how does each choice affect valuation and risk?"
+    },
+    {
+      "id": "ib_fin15",
+      "category": "Investment Banking Analyst / Associate (DCF valuation, financial statement modeling, M&A mechanics)",
+      "text": "Pitch me a stock or a company you believe is undervalued, including the key drivers, the main risks and what would make you wrong."
     }
   ],
   "Financial Analyst / Accountant (Budget forecasting, variance analysis, compliance regulations)": [
@@ -2291,6 +2831,21 @@
       "id": "fa_acc12",
       "category": "Financial Analyst / Accountant (Budget forecasting, variance analysis, compliance regulations)",
       "text": "How do you establish standard costing methodologies and analyze manufacturing overhead allocation variances in production environments?"
+    },
+    {
+      "id": "fa_acc13",
+      "category": "Financial Analyst / Accountant (Budget forecasting, variance analysis, compliance regulations)",
+      "text": "How do you evaluate whether a company's reported earnings are of high quality, and what accounting choices would make you more cautious?"
+    },
+    {
+      "id": "fa_acc14",
+      "category": "Financial Analyst / Accountant (Budget forecasting, variance analysis, compliance regulations)",
+      "text": "How do you build a month-end close process that is both faster and less error-prone as the business grows from a few entities to many?"
+    },
+    {
+      "id": "fa_acc15",
+      "category": "Financial Analyst / Accountant (Budget forecasting, variance analysis, compliance regulations)",
+      "text": "A senior executive asks you to adjust the timing of a revenue entry so the quarter hits its target. How do you respond?"
     }
   ],
   "Business Analyst / BI Developer (SQL proficiency, dashboard design, stakeholder requirement gathering)": [
@@ -2353,6 +2908,21 @@
       "id": "ba_bi12",
       "category": "Business Analyst / BI Developer (SQL proficiency, dashboard design, stakeholder requirement gathering)",
       "text": "How do you leverage data storytelling to present analytical findings to non-technical stakeholders to drive organizational change?"
+    },
+    {
+      "id": "ba_bi13",
+      "category": "Business Analyst / BI Developer (SQL proficiency, dashboard design, stakeholder requirement gathering)",
+      "text": "How do you validate that a dashboard's numbers are right before executives start making decisions with it, and how do you maintain trust over time?"
+    },
+    {
+      "id": "ba_bi14",
+      "category": "Business Analyst / BI Developer (SQL proficiency, dashboard design, stakeholder requirement gathering)",
+      "text": "Describe how you would investigate a sudden drop in a key metric, starting from the first hour after it is noticed."
+    },
+    {
+      "id": "ba_bi15",
+      "category": "Business Analyst / BI Developer (SQL proficiency, dashboard design, stakeholder requirement gathering)",
+      "text": "How do you prioritize competing analytics requests from different departments when you only have capacity for one?"
     }
   ],
   "Corporate Strategy / Operations Manager (Supply chain optimization, unit economics, process mapping)": [
@@ -2415,6 +2985,21 @@
       "id": "strat_ops12",
       "category": "Corporate Strategy / Operations Manager (Supply chain optimization, unit economics, process mapping)",
       "text": "When margins compress due to rising input costs, how do you determine which operating expenses to cut without impairing core customer satisfaction?"
+    },
+    {
+      "id": "strat_ops13",
+      "category": "Corporate Strategy / Operations Manager (Supply chain optimization, unit economics, process mapping)",
+      "text": "How do you decide which markets or segments to enter next when you have limited capital and several attractive options?"
+    },
+    {
+      "id": "strat_ops14",
+      "category": "Corporate Strategy / Operations Manager (Supply chain optimization, unit economics, process mapping)",
+      "text": "Walk me through how you would redesign a customer onboarding or fulfillment process that takes 12 days when competitors take 3."
+    },
+    {
+      "id": "strat_ops15",
+      "category": "Corporate Strategy / Operations Manager (Supply chain optimization, unit economics, process mapping)",
+      "text": "How do you build a business case for a major operational investment, and how do you track whether the benefits actually materialize afterwards?"
     }
   ],
   "Enterprise Account Executive (B2B sales strategy, objection handling, live deal closing roleplay)": [
@@ -2477,6 +3062,21 @@
       "id": "eae_sales12",
       "category": "Enterprise Account Executive (B2B sales strategy, objection handling, live deal closing roleplay)",
       "text": "Tell me about the largest or most complex enterprise deal you have ever closed. Walk me through the qualification, hurdles, and final closing mechanics."
+    },
+    {
+      "id": "eae_sales13",
+      "category": "Enterprise Account Executive (B2B sales strategy, objection handling, live deal closing roleplay)",
+      "text": "Roleplay: The prospect says, 'We are happy with our current vendor and switching would be too disruptive.' How do you respond?"
+    },
+    {
+      "id": "eae_sales14",
+      "category": "Enterprise Account Executive (B2B sales strategy, objection handling, live deal closing roleplay)",
+      "text": "How do you build and maintain a relationship with an executive sponsor who is difficult to reach and rarely replies to your emails?"
+    },
+    {
+      "id": "eae_sales15",
+      "category": "Enterprise Account Executive (B2B sales strategy, objection handling, live deal closing roleplay)",
+      "text": "Walk me through how you plan a territory or a book of accounts at the start of a year to hit a quota that is higher than last year's."
     }
   ],
   "Business Development Representative (BDR/SDR) (Live cold calling, lead qualification, value proposition delivery)": [
@@ -2539,6 +3139,21 @@
       "id": "bdr_sdr12",
       "category": "Business Development Representative (BDR/SDR) (Live cold calling, lead qualification, value proposition delivery)",
       "text": "What daily habits, time-blocking strategies, and pipeline tracking tools do you use to consistently exceed monthly quota targets?"
+    },
+    {
+      "id": "bdr_sdr13",
+      "category": "Business Development Representative (BDR/SDR) (Live cold calling, lead qualification, value proposition delivery)",
+      "text": "Roleplay: A prospect replies to your email with, 'Not interested, please remove me.' How do you handle it professionally?"
+    },
+    {
+      "id": "bdr_sdr14",
+      "category": "Business Development Representative (BDR/SDR) (Live cold calling, lead qualification, value proposition delivery)",
+      "text": "How do you decide which of your prospects deserve a personalized, high-effort outreach and which a lighter touch?"
+    },
+    {
+      "id": "bdr_sdr15",
+      "category": "Business Development Representative (BDR/SDR) (Live cold calling, lead qualification, value proposition delivery)",
+      "text": "Tell me about a time you were struggling to hit your activity or meeting targets. What did you change, and how did you know it worked?"
     }
   ],
   "Digital Marketing Specialist / Growth Marketer (Customer acquisition cost optimization, A/B test design, campaign ROI)": [
@@ -2601,6 +3216,21 @@
       "id": "mkt_growth12",
       "category": "Digital Marketing Specialist / Growth Marketer (Customer acquisition cost optimization, A/B test design, campaign ROI)",
       "text": "How do you report complex digital marketing performance metrics to an executive board focusing on pipeline generation, revenue influence, and LTV:CAC?"
+    },
+    {
+      "id": "mkt_growth13",
+      "category": "Digital Marketing Specialist / Growth Marketer (Customer acquisition cost optimization, A/B test design, campaign ROI)",
+      "text": "How do you decide when a channel or campaign should be scaled, paused or cancelled, and what data would you need to see?"
+    },
+    {
+      "id": "mkt_growth14",
+      "category": "Digital Marketing Specialist / Growth Marketer (Customer acquisition cost optimization, A/B test design, campaign ROI)",
+      "text": "Walk me through how you would launch a new product with no marketing budget and no existing audience."
+    },
+    {
+      "id": "mkt_growth15",
+      "category": "Digital Marketing Specialist / Growth Marketer (Customer acquisition cost optimization, A/B test design, campaign ROI)",
+      "text": "How do you measure and improve brand awareness when it does not produce direct conversions that can be tracked?"
     }
   ],
   "Content Strategist / Copywriter (Brand voice alignment, content distribution strategy, copywriting exercise)": [
@@ -2663,6 +3293,21 @@
       "id": "content_copy12",
       "category": "Content Strategist / Copywriter (Brand voice alignment, content distribution strategy, copywriting exercise)",
       "text": "How do you integrate generative AI tools into your content creation workflow while preserving authentic brand personality, editorial standards, and originality?"
+    },
+    {
+      "id": "content_copy13",
+      "category": "Content Strategist / Copywriter (Brand voice alignment, content distribution strategy, copywriting exercise)",
+      "text": "How would you write the homepage of a product that is complex, regulated and unexciting, such as business insurance, so that it is clear and engaging?"
+    },
+    {
+      "id": "content_copy14",
+      "category": "Content Strategist / Copywriter (Brand voice alignment, content distribution strategy, copywriting exercise)",
+      "text": "Tell me about a piece of content that underperformed. How did you diagnose why, and what did you change?"
+    },
+    {
+      "id": "content_copy15",
+      "category": "Content Strategist / Copywriter (Brand voice alignment, content distribution strategy, copywriting exercise)",
+      "text": "How do you adapt a single message for very different audiences and channels without losing the brand voice or contradicting yourself?"
     }
   ],
   "PR & Communications Manager (Crisis management roleplays, media statement drafting, brand reputation)": [
@@ -2725,6 +3370,21 @@
       "id": "pr_comm12",
       "category": "PR & Communications Manager (Crisis management roleplays, media statement drafting, brand reputation)",
       "text": "How do you proactively monitor social media sentiment and digital news channels to intercept brand reputation threats before they escalate into crises?"
+    },
+    {
+      "id": "pr_comm13",
+      "category": "PR & Communications Manager (Crisis management roleplays, media statement drafting, brand reputation)",
+      "text": "A false rumor about your company starts circulating widely on social media. How do you decide whether to respond, and what do you say?"
+    },
+    {
+      "id": "pr_comm14",
+      "category": "PR & Communications Manager (Crisis management roleplays, media statement drafting, brand reputation)",
+      "text": "How do you prepare a spokesperson for a hostile, live television interview, including the questions they most fear?"
+    },
+    {
+      "id": "pr_comm15",
+      "category": "PR & Communications Manager (Crisis management roleplays, media statement drafting, brand reputation)",
+      "text": "How do you build lasting relationships with journalists in a beat where your company has no existing coverage?"
     }
   ],
   "Human Resources Business Partner (HRBP) (Employee relations, performance management, conflict mediation)": [
@@ -2787,6 +3447,21 @@
       "id": "hrbp_people12",
       "category": "Human Resources Business Partner (HRBP) (Employee relations, performance management, conflict mediation)",
       "text": "How do you embed Diversity, Equity, and Inclusion (DEI) principles into promotion review boards and performance appraisal processes?"
+    },
+    {
+      "id": "hrbp_people13",
+      "category": "Human Resources Business Partner (HRBP) (Employee relations, performance management, conflict mediation)",
+      "text": "A manager wants to dismiss an employee who recently raised a formal complaint. How do you advise them, and what risks do you flag?"
+    },
+    {
+      "id": "hrbp_people14",
+      "category": "Human Resources Business Partner (HRBP) (Employee relations, performance management, conflict mediation)",
+      "text": "How do you handle a request from a senior leader to share confidential employee information that you believe they should not have?"
+    },
+    {
+      "id": "hrbp_people15",
+      "category": "Human Resources Business Partner (HRBP) (Employee relations, performance management, conflict mediation)",
+      "text": "How would you design a fair and transparent promotion and pay-review process in a fast-growing company where it has previously been ad hoc?"
     }
   ],
   "Technical Recruiter / Talent Acquisition Specialist (Sourcing strategy, candidate assessment, hiring manager alignment)": [
@@ -2849,6 +3524,21 @@
       "id": "tech_rec12",
       "category": "Technical Recruiter / Talent Acquisition Specialist (Sourcing strategy, candidate assessment, hiring manager alignment)",
       "text": "How do you manage candidate expectations and communication when internal business changes suddenly pause or freeze headcount mid-interview process?"
+    },
+    {
+      "id": "tech_rec13",
+      "category": "Technical Recruiter / Talent Acquisition Specialist (Sourcing strategy, candidate assessment, hiring manager alignment)",
+      "text": "How do you evaluate candidates fairly when their experience comes from non-traditional backgrounds such as bootcamps, self-teaching or career changes?"
+    },
+    {
+      "id": "tech_rec14",
+      "category": "Technical Recruiter / Talent Acquisition Specialist (Sourcing strategy, candidate assessment, hiring manager alignment)",
+      "text": "A hiring manager wants to reject every candidate you present and cannot say what is missing. How do you diagnose the problem and move forward?"
+    },
+    {
+      "id": "tech_rec15",
+      "category": "Technical Recruiter / Talent Acquisition Specialist (Sourcing strategy, candidate assessment, hiring manager alignment)",
+      "text": "How do you handle a finalist who accepts your offer and then withdraws, and what do you change in the process afterwards?"
     }
   ],
   "Customer Success Manager / Account Manager (Client retention strategies, upsell positioning, de-escalation roleplays)": [
@@ -2911,6 +3601,21 @@
       "id": "csm_am12",
       "category": "Customer Success Manager / Account Manager (Client retention strategies, upsell positioning, de-escalation roleplays)",
       "text": "Tell me about a time you saved a customer account that had formally submitted a cancellation request. What exact steps did you take?"
+    },
+    {
+      "id": "csm_am13",
+      "category": "Customer Success Manager / Account Manager (Client retention strategies, upsell positioning, de-escalation roleplays)",
+      "text": "A customer is using only ten percent of the product they bought and is hinting they will not renew. Walk me through your plan."
+    },
+    {
+      "id": "csm_am14",
+      "category": "Customer Success Manager / Account Manager (Client retention strategies, upsell positioning, de-escalation roleplays)",
+      "text": "How do you balance the needs of a very large, demanding customer against the time you owe the rest of your portfolio?"
+    },
+    {
+      "id": "csm_am15",
+      "category": "Customer Success Manager / Account Manager (Client retention strategies, upsell positioning, de-escalation roleplays)",
+      "text": "Roleplay: The customer's new executive says, 'I was not part of the decision to buy this, and I think we should switch to a cheaper tool.' How do you respond?"
     }
   ],
   "Customer Support / Helpdesk Specialist (Live troubleshooting, empathy checks, ticketing workflow execution)": [
@@ -2973,6 +3678,21 @@
       "id": "cust_supp12",
       "category": "Customer Support / Helpdesk Specialist (Live troubleshooting, empathy checks, ticketing workflow execution)",
       "text": "How do you collect and summarize qualitative customer feedback trends from support tickets to influence future product roadmap decisions?"
+    },
+    {
+      "id": "cust_supp13",
+      "category": "Customer Support / Helpdesk Specialist (Live troubleshooting, empathy checks, ticketing workflow execution)",
+      "text": "How do you handle a customer who is polite but repeatedly asks for something that is outside company policy to grant?"
+    },
+    {
+      "id": "cust_supp14",
+      "category": "Customer Support / Helpdesk Specialist (Live troubleshooting, empathy checks, ticketing workflow execution)",
+      "text": "Describe how you would keep your quality high and your empathy genuine when you have answered the same question fifty times in a day."
+    },
+    {
+      "id": "cust_supp15",
+      "category": "Customer Support / Helpdesk Specialist (Live troubleshooting, empathy checks, ticketing workflow execution)",
+      "text": "A customer reports a problem you cannot reproduce and you have no logs. How do you move toward a resolution without making them feel disbelieved?"
     }
   ],
   "Clinical Psychologist / Staff Therapist (Case conceptualization, ethical dilemmas, risk assessment)": [
@@ -3035,6 +3755,21 @@
       "id": "clin_psych12",
       "category": "Clinical Psychologist / Staff Therapist (Case conceptualization, ethical dilemmas, risk assessment)",
       "text": "What personal self-care practices, peer supervision routines, and clinical boundaries do you maintain to prevent burnout and compassion fatigue?"
+    },
+    {
+      "id": "clin_psych13",
+      "category": "Clinical Psychologist / Staff Therapist (Case conceptualization, ethical dilemmas, risk assessment)",
+      "text": "How do you decide when a client has reached the limits of what you can offer and needs to be referred to another clinician or a higher level of care?"
+    },
+    {
+      "id": "clin_psych14",
+      "category": "Clinical Psychologist / Staff Therapist (Case conceptualization, ethical dilemmas, risk assessment)",
+      "text": "How do you work with a client who is mandated to attend therapy by a court or an employer and shows little motivation to engage?"
+    },
+    {
+      "id": "clin_psych15",
+      "category": "Clinical Psychologist / Staff Therapist (Case conceptualization, ethical dilemmas, risk assessment)",
+      "text": "How do you evaluate whether therapy is working, and how do you use feedback or outcome measures to adjust your approach with a client?"
     }
   ],
   "Industrial-Organizational Psychologist (Selection tool validation, change management, organizational assessment)": [
@@ -3097,6 +3832,21 @@
       "id": "io_psych12",
       "category": "Industrial-Organizational Psychologist (Selection tool validation, change management, organizational assessment)",
       "text": "How do you design structured behavioral interview guides and scoring rubrics that increase inter-rater reliability across interview panels?"
+    },
+    {
+      "id": "io_psych13",
+      "category": "Industrial-Organizational Psychologist (Selection tool validation, change management, organizational assessment)",
+      "text": "How do you evaluate a vendor's claim that their assessment tool predicts job performance, and what evidence would you require before using it?"
+    },
+    {
+      "id": "io_psych14",
+      "category": "Industrial-Organizational Psychologist (Selection tool validation, change management, organizational assessment)",
+      "text": "How would you design and evaluate a leadership development program so that you can show it changed behavior and not only satisfaction scores?"
+    },
+    {
+      "id": "io_psych15",
+      "category": "Industrial-Organizational Psychologist (Selection tool validation, change management, organizational assessment)",
+      "text": "How do you communicate statistical findings about people and organizations to executives who want a simple answer, without overstating the certainty?"
     }
   ],
   "Site Reliability / Field Service Engineer (On-site diagnostics, equipment troubleshooting, safety protocols)": [
@@ -3159,6 +3909,21 @@
       "id": "field_sre12",
       "category": "Site Reliability / Field Service Engineer (On-site diagnostics, equipment troubleshooting, safety protocols)",
       "text": "How do you train on-site customer technicians on basic routine maintenance and first-response procedures to prevent avoidable emergency service dispatches?"
+    },
+    {
+      "id": "field_sre13",
+      "category": "Site Reliability / Field Service Engineer (On-site diagnostics, equipment troubleshooting, safety protocols)",
+      "text": "You arrive on site to repair a unit and discover the underlying cause is a design flaw that will keep causing failures. How do you handle the immediate repair and the longer-term issue?"
+    },
+    {
+      "id": "field_sre14",
+      "category": "Site Reliability / Field Service Engineer (On-site diagnostics, equipment troubleshooting, safety protocols)",
+      "text": "How do you manage your own safety and the safety of others when working alone at a remote or hazardous site?"
+    },
+    {
+      "id": "field_sre15",
+      "category": "Site Reliability / Field Service Engineer (On-site diagnostics, equipment troubleshooting, safety protocols)",
+      "text": "A customer asks you to bypass a safety interlock to get a machine running faster so they can meet their production deadline. How do you respond?"
     }
   ],
   "Executive / C-Suite Leadership - CEO/CTO/CFO (Vision alignment, board management, capital allocation strategies)": [
@@ -3221,6 +3986,21 @@
       "id": "exec_lead12",
       "category": "Executive / C-Suite Leadership - CEO/CTO/CFO (Vision alignment, board management, capital allocation strategies)",
       "text": "How do you define and manage enterprise risk management protocols encompassing cybersecurity threats, regulatory compliance, and geopolitical supply shocks?"
+    },
+    {
+      "id": "exec_lead13",
+      "category": "Executive / C-Suite Leadership - CEO/CTO/CFO (Vision alignment, board management, capital allocation strategies)",
+      "text": "How do you decide when to make a decision quickly with imperfect information, and when to slow down and gather more, at the level of the whole company?"
+    },
+    {
+      "id": "exec_lead14",
+      "category": "Executive / C-Suite Leadership - CEO/CTO/CFO (Vision alignment, board management, capital allocation strategies)",
+      "text": "How do you handle a situation where your most valuable executive or engineer is also damaging the culture you are trying to build?"
+    },
+    {
+      "id": "exec_lead15",
+      "category": "Executive / C-Suite Leadership - CEO/CTO/CFO (Vision alignment, board management, capital allocation strategies)",
+      "text": "What is the most important thing a CEO, CTO or CFO should stop doing as the company grows, and how do you hand it off?"
     }
   ]
 }

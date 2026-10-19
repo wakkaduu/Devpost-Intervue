@@ -5,7 +5,7 @@ import { TRACK_GROUPS, type Track } from "@/lib/tracks";
 const bank = questionsData as Record<string, Question[]>;
 
 /** Questions asked in one practice session, and the time we budget per answer. */
-export const SESSION_QUESTION_COUNT = 5;
+export const SESSION_QUESTION_COUNT = 12;
 const MINUTES_PER_QUESTION = 3;
 
 export const DEFAULT_TRACK = "Behavioral";

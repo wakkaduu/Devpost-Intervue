@@ -1,7 +1,7 @@
 // Request/response contract and prompt for the end-of-session debrief.
 import type { Debrief, DebriefRequest } from "@/types";
 
-export const MAX_DEBRIEF_ENTRIES = 12;
+export const MAX_DEBRIEF_ENTRIES = 20; // a full session is 12 questions; room to grow
 export const MIN_DEBRIEF_ENTRIES = 2;
 
 function text(value: unknown, field: string, max: number): string {

@@ -111,7 +111,7 @@ describe("resuming after a refresh", () => {
     saveDraft(draftSession(), { answer: "", elapsedSec: 0, spokenSeconds: 0 });
     mount();
     await userEvent.click(await screen.findByRole("button", { name: "Start a new session" }));
-    expect(await screen.findByText("Question 1 of 5")).toBeInTheDocument();
+    expect(await screen.findByText("Question 1 of 12")).toBeInTheDocument();
     expect(screen.getByLabelText("Your answer")).toHaveValue("");
     await new Promise((r) => setTimeout(r, 700));
     expect(window.localStorage.getItem(DRAFT_KEY)).toBeNull();

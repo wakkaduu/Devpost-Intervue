@@ -6,7 +6,7 @@ Built with Next.js, TypeScript, Gemini (with Groq as a backup reviewer), Supabas
 
 ## What it does
 
-- **52 interview tracks** (behavioral, engineering, medicine, law, sales, visas, pitch competitions and more), searchable and grouped by field.
+- **52 interview tracks** (behavioral, engineering, medicine, law, sales, visas, pitch competitions and more), each with 15 questions. A session asks 12 of them in a random mix, so repeat practice stays fresh.
 - **Voice or written answers.** Voice mode shows a live transcript, a live pace and filler-word read-out, and has an optional microphone check. Browsers without live speech recognition can record audio that the server transcribes.
 - **Per-answer AI review:** score, one thing to fix first, a stronger version of your weakest sentences, a follow-up question, and a read on your tone. Delivery feedback covers words per minute and filler words.
 - **Session debrief:** patterns across all your answers, best and weakest answer, and what to fix first.

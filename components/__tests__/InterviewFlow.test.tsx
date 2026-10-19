@@ -81,7 +81,7 @@ describe("interview session", () => {
     const box = await screen.findByLabelText("Your answer");
     await userEvent.type(box, "first answer");
     await userEvent.click(screen.getByRole("button", { name: "Next question" }));
-    expect(await screen.findByText(/Question 2 of 5/)).toBeInTheDocument();
+    expect(await screen.findByText(/Question 2 of 12/)).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText("Your answer"), "second answer");
     await userEvent.click(screen.getByRole("button", { name: "End early" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/summary"));

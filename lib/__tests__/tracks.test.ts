@@ -30,7 +30,7 @@ describe("tracks", () => {
     expect(new Set(ALL_TRACKS.map((t) => t.name)).size).toBe(52);
   });
   it("sizes a session", () => {
-    expect(sessionLength("Behavioral")).toEqual({ questions: 5, minutes: 15 });
+    expect(sessionLength("Behavioral")).toEqual({ questions: 12, minutes: 36 });
   });
 });
 

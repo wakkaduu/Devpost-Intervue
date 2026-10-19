@@ -32,10 +32,16 @@ describe("scoreVerdict", () => {
 });
 
 describe("pickQuestions", () => {
-  it("returns 5 distinct questions from the track", () => {
+  it("returns 12 distinct questions from the track", () => {
     const qs = pickQuestions("Behavioral");
-    expect(qs).toHaveLength(5);
-    expect(new Set(qs.map((q) => q.id)).size).toBe(5);
+    expect(qs).toHaveLength(12);
+    expect(new Set(qs.map((q) => q.id)).size).toBe(12);
+  });
+  it("picks a different mix of questions from the 15 in a track from one session to the next", () => {
+    const seen = new Set<string>();
+    for (let i = 0; i < 40; i++) pickQuestions("Behavioral").forEach((q) => seen.add(q.id));
+    expect(seen.size).toBe(15); // over several sessions every question in the track gets used
+    expect(pickQuestions("Behavioral", 12, () => 0.1).map((q) => q.id)).not.toEqual(pickQuestions("Behavioral", 12, () => 0.9).map((q) => q.id));
   });
   it("is empty for an unknown track", () => expect(pickQuestions("Nope")).toEqual([]));
 });
