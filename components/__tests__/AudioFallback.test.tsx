@@ -29,6 +29,20 @@ class NetworkFailRecognition {
   start() { liveStarts++; setTimeout(() => this.onerror?.({ error: "network" }), 0); }
   stop() {} abort() {}
 }
+/** Brave: the microphone opens ("Listening" shows) and only then does the browser report that the speech service is unreachable. */
+class OpenThenFailRecognition {
+  constructor(private code = "network") {}
+  onerror: ((e: { error: string }) => void) | null = null;
+  onstart: (() => void) | null = null;
+  onaudiostart: (() => void) | null = null;
+  onend: (() => void) | null = null;
+  start() {
+    liveStarts++;
+    setTimeout(() => { this.onstart?.(); this.onaudiostart?.(); }, 0);
+    setTimeout(() => this.onerror?.({ error: this.code }), 40);
+  }
+  stop() {} abort() {}
+}
 class DeniedRecognition {
   onerror: ((e: { error: string }) => void) | null = null;
   start() { setTimeout(() => this.onerror?.({ error: "not-allowed" }), 0); }
@@ -84,6 +98,7 @@ describe("one button: live captions fall back to audio recording by themselves",
     await userEvent.click(screen.getByRole("button", { name: /Start recording/ }));
     expect(await screen.findByRole("button", { name: /Starting microphone/ })).toBeInTheDocument();
     expect(screen.getByText(/wait for “Recording” before you speak/)).toBeInTheDocument();
+    await waitFor(() => expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled()); // after the short hand-over pause
     await act(async () => release({ getTracks: () => [{ stop: stopTrack }] }));
     expect(await screen.findByRole("button", { name: /Stop recording/ })).toBeInTheDocument();
   });
@@ -133,6 +148,61 @@ describe("one button: live captions fall back to audio recording by themselves",
     expect(screen.getByRole("button", { name: /Transcribing/ })).toBeDisabled();
     await act(async () => finish());
     await waitFor(() => expect(answer()).toHaveValue("done"));
+  });
+});
+
+describe("the Brave case: Listening shows first, then the speech service turns out to be unreachable", () => {
+  it.each([["network"], ["service-not-allowed"], ["language-not-supported"]])("error '%s' after the microphone opened still ends up recording audio, with one press", async (code) => {
+    (window as any).SpeechRecognition = class extends OpenThenFailRecognition { constructor() { super(code); } };
+    transcript("brave works");
+    render(<Harness />);
+    await userEvent.click(screen.getByRole("button", { name: /Start recording/ }));
+    // the single press ends up in audio recording (not back at "Start recording", which was the bug)
+    await waitFor(() => expect(screen.getByText(/Recording… speak now/)).toBeInTheDocument());
+    expect(screen.getByRole("button", { name: /Stop recording/ })).toBeInTheDocument();
+    expect(screen.queryByText(/Listening… speak now/)).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+    await userEvent.click(screen.getByRole("button", { name: /Stop recording/ }));
+    await waitFor(() => expect(answer()).toHaveValue("brave works"));
+  });
+
+  it("an unexpected one-off error does not make the person press Start twice either", async () => {
+    (window as any).SpeechRecognition = class extends OpenThenFailRecognition { constructor() { super("bad-grammar"); } };
+    transcript("fine");
+    render(<Harness />);
+    await userEvent.click(screen.getByRole("button", { name: /Start recording/ }));
+    await waitFor(() => expect(screen.getByText(/Recording… speak now/)).toBeInTheDocument());
+  });
+
+  it("if the microphone is still busy for a moment after the speech engine lets go, it tries again by itself", async () => {
+    (window as any).SpeechRecognition = OpenThenFailRecognition;
+    let calls = 0;
+    mic(async () => {
+      calls++;
+      if (calls === 1) throw Object.assign(new Error("busy"), { name: "NotReadableError" });
+      return { getTracks: () => [{ stop: stopTrack }] };
+    });
+    transcript("ok");
+    render(<Harness />);
+    await userEvent.click(screen.getByRole("button", { name: /Start recording/ }));
+    await waitFor(() => expect(screen.getByText(/Recording… speak now/)).toBeInTheDocument(), { timeout: 3000 });
+    expect(calls).toBe(2);
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("ending a live recording yourself is not mistaken for a failure that needs rescuing", async () => {
+    class WorkingRecognition {
+      onstart: any; onaudiostart: any; onend: any; onerror: any; onresult: any;
+      start() { liveStarts++; setTimeout(() => { this.onstart?.(); this.onaudiostart?.(); }, 0); }
+      stop() { setTimeout(() => this.onend?.(), 0); } abort() {}
+    }
+    (window as any).SpeechRecognition = WorkingRecognition;
+    render(<Harness />);
+    await userEvent.click(screen.getByRole("button", { name: /Start recording/ }));
+    await userEvent.click(await screen.findByRole("button", { name: /Stop recording/ }));
+    await screen.findByRole("button", { name: /Record more|Start recording/ });
+    expect(navigator.mediaDevices.getUserMedia).not.toHaveBeenCalled();
   });
 });
 

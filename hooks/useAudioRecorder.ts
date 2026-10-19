@@ -76,7 +76,16 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
     setAutoStopped(false);
     setIsStarting(true); // shown at once: opening the microphone (and its permission prompt) takes a moment
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (first) {
+        // Right after the browser's speech engine lets go of the microphone it can briefly still be "busy". Try once more.
+        const name = (first as { name?: string })?.name;
+        if (name !== "NotReadableError" && name !== "AbortError" && name !== "TrackStartError") throw first;
+        await new Promise((r) => setTimeout(r, 500));
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
       streamRef.current = stream;
       startMeter(stream);
       const mimeType = TYPES.find((t) => MediaRecorder.isTypeSupported?.(t));

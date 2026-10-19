@@ -32,18 +32,26 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
   const [audioError, setAudioError] = useState<string | null>(null);
   const [recordedSeconds, setRecordedSeconds] = useState(0);
   const base = useRef("");
-  const triedLive = useRef(false);
+  // Set when the person pressed Start and live captions were tried. If they then fail, audio recording takes over.
+  const [triedLive, setTriedLive] = useState(false);
 
   // Live captions can fail for reasons that audio recording gets around (no speech service, service unreachable).
   // Denied or missing microphones can't be worked around, so those stay typing-only.
-  const audioFallback = speech.typingOnly && ["unsupported", "network", "failed"].includes(speech.unavailableReason ?? "") && recorder.isSupported;
+  // A live-captions failure of any kind other than a denied or missing microphone is worked around by recording audio,
+  // including an unexpected one-off error, so nobody has to press Start a second time.
+  const liveBroken = ["unsupported", "network", "failed"].includes(speech.unavailableReason ?? "") || speech.retryCount > 0;
+  const audioFallback = liveBroken && recorder.isSupported;
   const audioMode = audioFallback || (!speech.isSupported && recorder.isSupported);
-  const noVoice = speech.typingOnly && !audioFallback;
+  const noVoice = speech.typingOnly && !audioFallback; // denied, no microphone, or nothing works at all
+
+  // Between live captions failing and audio recording opening there is a short hand-over. It is computed while rendering
+  // (not in an effect), so the button never flickers back to "Start recording" in between.
+  const switching = triedLive && audioFallback && !recorder.isStarting && !recorder.isRecording && !transcribing;
 
   // Anything the microphone is doing: starting up, listening, or finishing the last words.
   const speechActive = speech.isRecording || speech.isStopping;
-  const engaged = speechActive || recorder.isRecording || recorder.isStarting;
-  const starting = speech.isStarting || recorder.isStarting;
+  const engaged = speechActive || recorder.isRecording || recorder.isStarting || switching;
+  const starting = speech.isStarting || recorder.isStarting || switching;
   const finishing = speech.isStopping || transcribing;
   // Only time spent with the microphone really live counts towards speaking time, not the start-up wait.
   const listening = speech.isListening || recorder.isRecording;
@@ -68,13 +76,16 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
   }, [recordedSeconds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The seamless part: live captions just failed after the person pressed Start, so carry on by recording audio.
+  // Some browsers (Brave) open the microphone and only then report that the speech service is unreachable, so this
+  // must still happen even if "Listening" flashed up first. A short pause lets the speech engine let go of the microphone.
   useEffect(() => {
-    if (speech.isListening) triedLive.current = false;
-    if (triedLive.current && audioFallback && !recorder.isStarting && !recorder.isRecording && !transcribing) {
-      triedLive.current = false;
+    if (!switching) return;
+    const id = setTimeout(() => {
+      setTriedLive(false);
       void recorder.start();
-    }
-  }, [audioFallback, speech.isListening]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, 200);
+    return () => clearTimeout(id);
+  }, [switching]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function transcribeBlob(blob: Blob | null) {
     if (!blob) {
@@ -99,14 +110,17 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
   async function press() {
     stopSpeaking(); // the interviewer stops talking when you start
     setAudioError(null);
-    if (finishing || recorder.isStarting) return; // still working on the last step
-    if (speech.isStarting || speech.isListening) return speech.stop(); // cancels if still starting, otherwise finishes
+    if (finishing || recorder.isStarting || switching) return; // still working on the last step
+    if (speech.isStarting || speech.isListening) {
+      setTriedLive(false); // the person ended it themselves, so a later failure isn't theirs to be rescued from
+      return speech.stop(); // cancels if still starting, otherwise finishes
+    }
     if (recorder.isRecording) return transcribeBlob(await recorder.stop());
     base.current = value;
     if (audioMode) {
       void recorder.start();
     } else {
-      triedLive.current = true;
+      setTriedLive(true);
       speech.start();
     }
   }
@@ -119,7 +133,7 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
       ? "Finishing…"
       : speech.isStarting
         ? "Starting microphone… (cancel)"
-        : recorder.isStarting
+        : recorder.isStarting || switching
           ? "Starting microphone…"
           : listening
             ? `■ Stop recording (${formatDuration(recordedSeconds)})`
@@ -135,7 +149,7 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
           <Button
             variant={listening ? "danger" : "primary"}
             size="sm"
-            loading={finishing || recorder.isStarting}
+            loading={finishing || recorder.isStarting || switching}
             onClick={() => void press()}
             aria-pressed={listening}
             className={listening ? "animate-pulse-ring" : ""}

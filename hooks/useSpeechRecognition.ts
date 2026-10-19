@@ -9,6 +9,7 @@ export const MAX_RETRIES = 3;
 const FATAL_ERRORS: Record<string, { reason: "denied" | "no-mic" | "network"; message: string }> = {
   "not-allowed": { reason: "denied", message: "Microphone access was denied. Allow the microphone in your browser settings, or type your answer instead." },
   "audio-capture": { reason: "no-mic", message: "No microphone was found. Connect one, or type your answer instead." },
+  "service-not-allowed": { reason: "network", message: "The browser's speech service is turned off. Please type your answer, or try Google Chrome." },
   network: { reason: "network", message: "The browser's speech service could not be reached. Please type your answer, or try Google Chrome." },
 };
 
@@ -157,6 +158,7 @@ export function useSpeechRecognition() {
     rec.onerror = (event: SpeechRecognitionErrorEvent) => {
       // Pauses to think are normal; they aren't failures.
       if (event.error === "no-speech" || event.error === "aborted") return;
+      console.debug("[voice] live captions stopped with error:", event.error);
       if (FATAL_ERRORS[event.error]) {
         setFatal(FATAL_ERRORS[event.error].reason);
         setError(FATAL_ERRORS[event.error].message);
