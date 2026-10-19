@@ -1,11 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
-import { verifyUserCredentials } from "@/lib/db";
+import { isEmailVerified, verifyUserCredentials } from "@/lib/db";
 import { availableProviders, resolveOAuthSignIn } from "@/lib/oauth";
 
 const enabled = availableProviders();
+
+/** Right password, but the email hasn't been confirmed yet. The login form turns this into the "enter your code" step. */
+class EmailNotVerified extends CredentialsSignin {
+  code = "email_not_verified";
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // Auth.js reads AUTH_SECRET from the environment. It is required in production.
@@ -22,8 +27,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!email || !password) return null;
         try {
           const user = await verifyUserCredentials(email, password);
+          if (user && (await isEmailVerified(user.email)) === false) throw new EmailNotVerified();
           return user ? { id: user.id, name: user.name, email: user.email, image: user.image } : null;
         } catch (err) {
+          if (err instanceof EmailNotVerified) throw err;
           console.error("[auth] sign-in lookup failed:", err);
           return null;
         }

@@ -39,6 +39,10 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
   const [fields, setFields] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState<"form" | "confirm">("form");
+  const [code, setCode] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
   const [providers, setProviders] = useState<{ google: boolean; github: boolean }>({ google: false, github: false });
 
   // Show a social button only for providers the server has configured.
@@ -49,10 +53,22 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
+
   const oauthError = authError ? (OAUTH_ERRORS[authError] ?? "Sign-in didn't work. Please try again.") : null;
 
   async function logIn() {
     const res = await signIn("credentials", { email, password, redirect: false });
+    if (res?.code === "email_not_verified") {
+      setStep("confirm");
+      setNotice("Confirm your email to finish signing in. We're sending you a new code.");
+      await resend();
+      return false;
+    }
     if (!res || res.error) {
       setError("That email and password don't match. Check them and try again.");
       return false;
@@ -60,6 +76,66 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
     router.push(safeCallbackPath(callbackUrl));
     router.refresh();
     return true;
+  }
+
+  async function resend() {
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/resend-confirmation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "We couldn't send a new code.");
+        return;
+      }
+      if (data.sent === false) {
+        setCooldown(data.retryAfterSeconds ?? 60);
+        setNotice("A code was sent a moment ago. Check your email, or wait to request another.");
+      } else {
+        setCooldown(60);
+        setNotice(`We sent a new 6-digit code to ${email.trim()}.`);
+      }
+    } catch {
+      setError("We couldn't send a new code. Check your connection and try again.");
+    }
+  }
+
+  async function confirm(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!/^\d{6}$/.test(code.trim())) {
+      setError("Enter the 6-digit code from your email.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/confirm-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: code.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.code === "INVALID_CODE") {
+          const left = data.attemptsLeft ?? 0;
+          setError(`That code isn't right. ${left === 1 ? "1 try" : `${left} tries`} left.`);
+        } else {
+          setError(data.error ?? "We couldn't check that code.");
+        }
+        return;
+      }
+      setStep("form");
+      setCode("");
+      setNotice(null);
+      if (!(await logIn())) setMode("signin");
+    } catch {
+      setError("Something went wrong. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -91,6 +167,14 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
           setError(data.error ?? "We couldn't create your account.");
           return;
         }
+        setStep("confirm");
+        if (data.emailSent) {
+          setNotice(`We sent a 6-digit code to ${email.trim()}. It expires in 15 minutes.`);
+          setCooldown(60);
+        } else {
+          setNotice("Your account is created, but we couldn't send the email. Press “Send a new code”.");
+        }
+        return;
       }
       await logIn();
     } catch {
@@ -105,6 +189,36 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
     setError(null);
     setFields({});
   };
+
+  if (step === "confirm") {
+    return (
+      <div className="rounded-2xl bg-sage-100 p-5 sm:p-6 text-darkslate-900">
+        <form onSubmit={confirm} noValidate>
+          <h1 className="text-xl font-bold">Check your email</h1>
+          {notice && <p role="status" className="mt-2 text-sm text-darkslate-700">{notice}</p>}
+          <Field
+            id="code"
+            label="6-digit code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+          />
+          {error && <div role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</div>}
+          <div className="mt-5 space-y-2">
+            <Button type="submit" size="lg" fullWidth loading={busy}>Confirm email</Button>
+            <Button variant="secondary" size="lg" fullWidth disabled={cooldown > 0} onClick={() => void resend()}>
+              {cooldown > 0 ? `Send a new code (${cooldown}s)` : "Send a new code"}
+            </Button>
+            <Button variant="ghost" fullWidth onClick={() => { setStep("form"); setError(null); setNotice(null); setCode(""); }}>
+              Back
+            </Button>
+          </div>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl bg-sage-100 p-5 sm:p-6 text-darkslate-900">

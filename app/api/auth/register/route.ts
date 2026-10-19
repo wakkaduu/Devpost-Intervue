@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateRegistration } from "@/lib/auth-validation";
 import { createUser, EmailTakenError } from "@/lib/db";
+import { issueConfirmationCode } from "@/lib/confirm-email";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: unknown;
@@ -18,7 +19,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const user = await createUser(result.value);
-    return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } }, { status: 201 });
+    // The account exists but can't sign in until the emailed code is entered. If the email fails to send, the form offers "resend".
+    const issued = await issueConfirmationCode(user.email, false).catch((err) => {
+      console.error("[register] issuing the confirmation code failed:", err);
+      return { status: "email-failed" as const };
+    });
+    return NextResponse.json(
+      { user: { id: user.id, name: user.name, email: user.email }, needsConfirmation: true, emailSent: issued.status === "sent" },
+      { status: 201 }
+    );
   } catch (err) {
     if (err instanceof EmailTakenError) {
       return NextResponse.json(

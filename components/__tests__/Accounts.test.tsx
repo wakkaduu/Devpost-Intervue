@@ -70,8 +70,13 @@ describe("AuthForm", () => {
     expect(fetchMock).not.toHaveBeenCalledWith("/api/auth/register", expect.anything());
   });
 
-  it("registers, then signs in", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ user: {} }) })));
+  it("registers, shows the code step, then signs in once the code is confirmed", async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === "/api/auth/register") return { ok: true, json: async () => ({ user: {}, needsConfirmation: true, emailSent: true }) };
+      if (url === "/api/auth/confirm-email") return { ok: true, json: async () => ({ verified: true }) };
+      return { ok: true, json: async () => ({ google: false, github: false }) };
+    });
+    vi.stubGlobal("fetch", fetchMock);
     h.signIn.mockResolvedValue({ ok: true });
     render(<AuthForm />);
     await userEvent.click(screen.getByRole("button", { name: "Create account", pressed: false }));
@@ -79,8 +84,65 @@ describe("AuthForm", () => {
     await userEvent.type(screen.getByLabelText("Email"), "sam@example.com");
     await userEvent.type(screen.getByLabelText("Password"), "supersecret1");
     await userEvent.keyboard("{Enter}");
-    await waitFor(() => expect(h.signIn).toHaveBeenCalled());
-    expect(h.push).toHaveBeenCalledWith("/");
+    expect(await screen.findByText(/We sent a 6-digit code to sam@example.com/)).toBeInTheDocument();
+    expect(h.signIn).not.toHaveBeenCalled(); // not signed in until the email is confirmed
+    await userEvent.type(screen.getByLabelText("6-digit code"), "123456");
+    await userEvent.click(screen.getByRole("button", { name: "Confirm email" }));
+    await waitFor(() => expect(h.signIn).toHaveBeenCalledWith("credentials", { email: "sam@example.com", password: "supersecret1", redirect: false }));
+    expect(fetchMock).toHaveBeenCalledWith("/api/auth/confirm-email", expect.objectContaining({ body: JSON.stringify({ email: "sam@example.com", code: "123456" }) }));
+    await waitFor(() => expect(h.push).toHaveBeenCalledWith("/"));
+  });
+
+  it("shows tries left on a wrong code, and blocks malformed codes without a request", async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === "/api/auth/register") return { ok: true, json: async () => ({ needsConfirmation: true, emailSent: true }) };
+      if (url === "/api/auth/confirm-email") return { ok: false, json: async () => ({ code: "INVALID_CODE", attemptsLeft: 3 }) };
+      return { ok: true, json: async () => ({ google: false, github: false }) };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AuthForm />);
+    await userEvent.click(screen.getByRole("button", { name: "Create account", pressed: false }));
+    await userEvent.type(screen.getByLabelText("Name"), "Sam");
+    await userEvent.type(screen.getByLabelText("Email"), "sam@example.com");
+    await userEvent.type(screen.getByLabelText("Password"), "supersecret1");
+    await userEvent.keyboard("{Enter}");
+    await userEvent.type(await screen.findByLabelText("6-digit code"), "12");
+    await userEvent.click(screen.getByRole("button", { name: "Confirm email" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Enter the 6-digit code");
+    expect(fetchMock.mock.calls.some((c) => c[0] === "/api/auth/confirm-email")).toBe(false);
+    await userEvent.type(screen.getByLabelText("6-digit code"), "3456");
+    await userEvent.click(screen.getByRole("button", { name: "Confirm email" }));
+    expect(await screen.findByText("That code isn't right. 3 tries left.")).toBeInTheDocument();
+  });
+
+  it("disables resend during the cooldown", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (url: string) =>
+      url === "/api/auth/register"
+        ? { ok: true, json: async () => ({ needsConfirmation: true, emailSent: true }) }
+        : { ok: true, json: async () => ({ google: false, github: false }) }));
+    render(<AuthForm />);
+    await userEvent.click(screen.getByRole("button", { name: "Create account", pressed: false }));
+    await userEvent.type(screen.getByLabelText("Name"), "Sam");
+    await userEvent.type(screen.getByLabelText("Email"), "sam@example.com");
+    await userEvent.type(screen.getByLabelText("Password"), "supersecret1");
+    await userEvent.keyboard("{Enter}");
+    expect(await screen.findByRole("button", { name: /Send a new code \(\d+s\)/ })).toBeDisabled();
+  });
+
+  it("sends someone with a correct password but unconfirmed email to the code step", async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url === "/api/auth/resend-confirmation"
+        ? { ok: true, json: async () => ({ ok: true, sent: true }) }
+        : { ok: true, json: async () => ({ google: false, github: false }) });
+    vi.stubGlobal("fetch", fetchMock);
+    h.signIn.mockResolvedValue({ error: "CredentialsSignin", code: "email_not_verified" });
+    render(<AuthForm />);
+    await userEvent.type(screen.getByLabelText("Email"), "sam@example.com");
+    await userEvent.type(screen.getByLabelText("Password"), "supersecret1");
+    await userEvent.keyboard("{Enter}");
+    expect(await screen.findByLabelText("6-digit code")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith("/api/auth/resend-confirmation", expect.anything());
+    expect(h.push).not.toHaveBeenCalled();
   });
 
   it("shows the server's message when the email is taken", async () => {

@@ -143,3 +143,67 @@ export async function upsertOAuthUser(input: { email: string; name?: string | nu
   }
   return data as UserRecord;
 }
+
+// ── Email confirmation ──────────────────────────────────────────────────────────
+
+export interface ConfirmationState {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  codeHash: string | null;
+  codeExpires: Date | null;
+  attempts: number;
+}
+
+export async function getConfirmationState(email: string): Promise<ConfirmationState | null> {
+  const u = await getUserByEmail(email);
+  if (!u) return null;
+  const row = u as unknown as Record<string, unknown>;
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    emailVerified: Boolean(u.email_verified),
+    codeHash: (row.confirmation_code_hash as string | null) ?? null,
+    codeExpires: row.confirmation_code_expires ? new Date(row.confirmation_code_expires as string) : null,
+    attempts: Number(row.confirmation_attempts ?? 0),
+  };
+}
+
+/** Stores a new code (hashed) and resets the attempt counter. */
+export async function setConfirmationCode(userId: string, codeHash: string, expires: Date): Promise<void> {
+  const { error } = await db()
+    .from("users")
+    .update({ confirmation_code_hash: codeHash, confirmation_code_expires: expires.toISOString(), confirmation_attempts: 0 })
+    .eq("id", userId);
+  if (error) throw new DatabaseError(error.message);
+}
+
+/**
+ * Counts one guess against the code. The update only succeeds if the counter still holds the value we
+ * read, so parallel guesses can't all slip through on the same count: each guess must win this swap.
+ */
+export async function recordConfirmationAttempt(userId: string, currentAttempts: number): Promise<boolean> {
+  const { data, error } = await db()
+    .from("users")
+    .update({ confirmation_attempts: currentAttempts + 1 })
+    .eq("id", userId)
+    .eq("confirmation_attempts", currentAttempts)
+    .select("id");
+  if (error) throw new DatabaseError(error.message);
+  return (data ?? []).length === 1;
+}
+
+export async function markEmailVerified(userId: string): Promise<void> {
+  const { error } = await db()
+    .from("users")
+    .update({ email_verified: true, confirmation_code_hash: null, confirmation_code_expires: null, confirmation_attempts: 0 })
+    .eq("id", userId);
+  if (error) throw new DatabaseError(error.message);
+}
+
+export async function isEmailVerified(email: string): Promise<boolean | null> {
+  const u = await getUserByEmail(email);
+  return u ? Boolean(u.email_verified) : null;
+}

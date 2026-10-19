@@ -89,7 +89,7 @@ Build mode: learn
   Learner check: Sign in with GitHub or Google and confirm your history appears.
   Commit: `Add Google and GitHub sign-in`
 
-- [ ] **9. Email confirmation with a resendable code**
+- [x] **9. Email confirmation with a resendable code**
   Becomes usable: New email sign-ups must enter a 6-digit emailed code; resend has a cooldown.
   Why now: Extended set, depends on Resend and the working account system.
   PRD ref: `prd.md > Email sign-up with confirmation`

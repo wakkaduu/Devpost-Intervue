@@ -15,8 +15,9 @@ function builder(table: string) {
 
   const run = (): { data: any; error: any } => {
     if (pending?.type === "update") {
-      rows().filter((r) => filters.every(([c, v]) => r[c] === v)).forEach((r) => Object.assign(r, pending!.row));
-      return { data: null, error: null };
+      const matched = rows().filter((r) => filters.every(([c, v]) => r[c] === v));
+      matched.forEach((r) => Object.assign(r, pending!.row));
+      return { data: matched.map((r) => ({ ...r })), error: null };
     }
     if (pending) {
       const { type, row, onConflict } = pending;
@@ -24,7 +25,8 @@ function builder(table: string) {
         if (table === "users" && uniqueEmails && rows().some((r) => r.email === row.email)) {
           return { data: null, error: { code: "23505", message: "duplicate key" } };
         }
-        rows().push({ ...row });
+        // Column defaults the real table would apply.
+        rows().push(table === "users" ? { email_verified: false, confirmation_attempts: 0, ...row } : { ...row });
       } else {
         const keys = onConflict!.split(",");
         const i = rows().findIndex((r) => keys.every((k) => r[k] === row[k]));
@@ -58,7 +60,7 @@ function builder(table: string) {
 
 vi.mock("@/lib/supabase", () => ({ getSupabase: () => ({ from: (t: string) => builder(t) }) }));
 
-import { createUser, EmailTakenError, getUserSessions, saveUserSession, upsertOAuthUser, verifyUserCredentials } from "@/lib/db";
+import { createUser, getConfirmationState, markEmailVerified, recordConfirmationAttempt, setConfirmationCode, EmailTakenError, getUserSessions, saveUserSession, upsertOAuthUser, verifyUserCredentials } from "@/lib/db";
 
 const session = (id: string, score: number, createdAt: string): SavedSession => ({
   id, category: "Behavioral", mode: "typed", averageScore: score, questionCount: 1,
@@ -177,4 +179,32 @@ describe("upsertOAuthUser", () => {
     await upsertOAuthUser({ email: "o@example.com", name: "O" });
     expect(await verifyUserCredentials("o@example.com", "anything-at-all")).toBeNull();
   });
+});
+
+describe("confirmation storage", () => {
+  it("stores a code and reads it back as confirmation state", async () => {
+    const u = await createUser({ name: "Sam", email: "sam@example.com", password: "supersecret1" });
+    const expires = new Date("2026-03-01T10:15:00Z");
+    await setConfirmationCode(u.id, "abc123hash", expires);
+    expect(await getConfirmationState("SAM@example.com")).toMatchObject({
+      id: u.id, emailVerified: false, codeHash: "abc123hash", attempts: 0, codeExpires: expires,
+    });
+  });
+
+  it("counts an attempt only if the counter is still what the caller read", async () => {
+    const u = await createUser({ name: "Sam", email: "sam@example.com", password: "supersecret1" });
+    expect(await recordConfirmationAttempt(u.id, 0)).toBe(true);
+    expect(await recordConfirmationAttempt(u.id, 0)).toBe(false); // a parallel guess that read the same 0 loses
+    expect(await recordConfirmationAttempt(u.id, 1)).toBe(true);
+    expect((await getConfirmationState("sam@example.com"))!.attempts).toBe(2);
+  });
+
+  it("verifying clears the code", async () => {
+    const u = await createUser({ name: "Sam", email: "sam@example.com", password: "supersecret1" });
+    await setConfirmationCode(u.id, "h", new Date());
+    await markEmailVerified(u.id);
+    expect(await getConfirmationState("sam@example.com")).toMatchObject({ emailVerified: true, codeHash: null, codeExpires: null });
+  });
+
+  it("unknown email has no state", async () => expect(await getConfirmationState("nobody@example.com")).toBeNull());
 });
