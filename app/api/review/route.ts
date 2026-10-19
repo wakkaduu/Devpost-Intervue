@@ -1,8 +1,8 @@
-// POST /api/review: server-side AI review of one answer.
-// GEMINI_API_KEY is read here on the server and is never sent to the browser.
+// POST /api/review: server-side review of one answer (Gemini, then Groq, then the basic grader).
+// API keys are read here on the server and are never sent to the browser.
 import { NextRequest, NextResponse } from "next/server";
 import { validateReviewRequest } from "@/lib/validation";
-import { requestGemini, GEMINI_MODEL } from "@/lib/gemini";
+import { evaluateAnswer } from "@/lib/evaluator";
 
 export const maxDuration = 30;
 
@@ -21,18 +21,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Invalid request." }, { status: 400 });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error("[review] GEMINI_API_KEY is not set");
-    return NextResponse.json({ error: "Review service is not configured." }, { status: 503 });
-  }
-
   try {
-    const feedback = await requestGemini(reviewRequest, apiKey);
-    console.log(`[review] answered by gemini (${GEMINI_MODEL})`);
-    return NextResponse.json({ feedback: { ...feedback, source: "ai" } });
+    return NextResponse.json({ feedback: await evaluateAnswer(reviewRequest) });
   } catch (err) {
-    console.error("[review] gemini failed:", err);
-    return NextResponse.json({ error: "Review service unavailable. Please try again." }, { status: 502 });
+    console.error("[review] unexpected failure:", err);
+    return NextResponse.json({ error: "Review service unavailable. Please try again." }, { status: 500 });
   }
 }

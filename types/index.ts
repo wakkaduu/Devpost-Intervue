@@ -21,8 +21,10 @@ export interface Feedback {
   howTheyAnswered: string;
   toneAnalysis: string;
   questionConnection: string;
-  /** Which grader produced this review. */
+  /** "ai" for Gemini or Groq, "basic" for the built-in rule-based grader. */
   source?: "ai" | "basic";
+  /** Which service actually wrote this review. */
+  provider?: "gemini" | "groq" | "basic";
 }
 
 export interface ReviewRequest {

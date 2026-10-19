@@ -99,7 +99,7 @@ Build mode: learn
   Learner check: Sign up with a new email and complete the confirmation.
   Commit: `Add email confirmation codes`
 
-- [ ] **10. Backup AI providers and transcription fallback**
+- [x] **10. Backup AI providers and transcription fallback**
   Becomes usable: If Gemini fails, Groq answers; if both fail, a clearly labelled basic grader answers; audio can be transcribed by the server when the browser can't.
   Why now: Resilience for the kernel and the learner's stated uncertainty about the background flow; best tested once the main path is stable.
   PRD ref: `prd.md > Multiple AI providers with fallback`, `prd.md > AI slow or failing`

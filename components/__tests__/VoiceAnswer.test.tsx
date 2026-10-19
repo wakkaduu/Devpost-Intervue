@@ -53,7 +53,7 @@ describe("VoiceAnswer", () => {
     delete (window as any).SpeechRecognition;
     render(<Harness />);
     await userEvent.click(screen.getByRole("button", { name: /Start recording/ }));
-    expect(screen.getByRole("alert")).toHaveTextContent("isn't supported");
+    expect(screen.getByRole("alert")).toHaveTextContent("can't transcribe speech live");
     expect(screen.queryByRole("button", { name: /recording/ })).toBeNull();
   });
 

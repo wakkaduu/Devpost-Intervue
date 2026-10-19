@@ -1,8 +1,16 @@
+import Button from "@/components/ui/Button";
 import type { Feedback } from "@/types";
 
-export default function FeedbackPanel({ feedback }: { feedback: Feedback }) {
+export default function FeedbackPanel({ feedback, onRetry }: { feedback: Feedback; onRetry?: () => void }) {
   return (
     <section aria-label="Your review" className="rounded-2xl bg-sage-100 p-5 sm:p-6 space-y-5 text-darkslate-900">
+      {feedback.source === "basic" && (
+        <div role="status" className="rounded-xl border border-gold-300 bg-gold-100 p-3 text-sm text-gold-900">
+          <p className="font-semibold">Basic feedback</p>
+          <p>The AI reviewers couldn’t be reached, so this review comes from simple checks and isn’t a full read of your answer.</p>
+          {onRetry && <Button className="mt-2" size="sm" variant="secondary" onClick={onRetry}>Try the AI review again</Button>}
+        </div>
+      )}
       <div className="flex items-center gap-4">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-forest-700 text-2xl font-bold text-white" aria-label={`Score ${feedback.score} out of 10`}>
           {feedback.score}

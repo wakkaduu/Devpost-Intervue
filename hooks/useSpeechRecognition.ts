@@ -6,10 +6,10 @@ export const MAX_RECORDING_MS = 10 * 60 * 1000;
 export const MAX_RETRIES = 3;
 
 /** Errors that mean the microphone or service can't be used at all: go straight to typing. */
-const FATAL_ERRORS: Record<string, string> = {
-  "not-allowed": "Microphone access was denied. Allow the microphone in your browser settings, or type your answer instead.",
-  "audio-capture": "No microphone was found. Connect one, or type your answer instead.",
-  network: "The browser's speech service could not be reached. Type your answer instead, or try Google Chrome.",
+const FATAL_ERRORS: Record<string, { reason: "denied" | "no-mic" | "network"; message: string }> = {
+  "not-allowed": { reason: "denied", message: "Microphone access was denied. Allow the microphone in your browser settings, or type your answer instead." },
+  "audio-capture": { reason: "no-mic", message: "No microphone was found. Connect one, or type your answer instead." },
+  network: { reason: "network", message: "The browser's speech service could not be reached. You can record audio for us to transcribe, or type your answer." },
 };
 
 function getApi(): typeof SpeechRecognition | undefined {
@@ -29,7 +29,7 @@ export function useSpeechRecognition() {
   const [interimTranscript, setInterimTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [fatal, setFatal] = useState(false);
+  const [fatal, setFatal] = useState<null | "denied" | "no-mic" | "unsupported" | "network">(null);
   const [autoStopped, setAutoStopped] = useState(false);
 
   const recRef = useRef<SpeechRecognition | null>(null);
@@ -56,8 +56,8 @@ export function useSpeechRecognition() {
   const start = useCallback(() => {
     const Api = getApi();
     if (!Api) {
-      setFatal(true);
-      setError("Speech recognition isn't supported in this browser. Type your answer instead, or try Google Chrome.");
+      setFatal("unsupported");
+      setError("This browser can't transcribe speech live. You can record audio for us to transcribe, or type your answer.");
       return;
     }
     setError(null);
@@ -85,8 +85,8 @@ export function useSpeechRecognition() {
       // Pauses to think are normal; they aren't failures.
       if (event.error === "no-speech" || event.error === "aborted") return;
       if (FATAL_ERRORS[event.error]) {
-        setFatal(true);
-        setError(FATAL_ERRORS[event.error]);
+        setFatal(FATAL_ERRORS[event.error].reason);
+        setError(FATAL_ERRORS[event.error].message);
         halt();
         return;
       }
@@ -143,7 +143,9 @@ export function useSpeechRecognition() {
     retryCount,
     autoStopped,
     /** True when voice can't be used any more (denied, unsupported, or 3 failed tries): typing is the only option. */
-    typingOnly: fatal || retryCount >= MAX_RETRIES,
+    typingOnly: fatal !== null || retryCount >= MAX_RETRIES,
+    /** Why live voice stopped being available: lets the UI offer audio transcription when the microphone itself is fine. */
+    unavailableReason: fatal ?? (retryCount >= MAX_RETRIES ? ("failed" as const) : null),
     start,
     stop,
   };

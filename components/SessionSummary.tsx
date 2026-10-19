@@ -61,6 +61,7 @@ export default function SessionSummary() {
   const average = averageScore(entries);
   const pending = entries.filter((e) => e.status === "loading").length;
   const failed = entries.filter((e) => e.status === "error").length;
+  const basicCount = entries.filter((e) => e.feedback?.source === "basic").length;
 
   const reviewedNumbers = entries.flatMap((e, i) => (e.status === "done" ? [i + 1] : []));
   let debriefView: DebriefView;
@@ -87,6 +88,7 @@ export default function SessionSummary() {
               <p className="mt-1 text-sm text-darkslate-600">
                 Average of {entries.filter((e) => e.status === "done").length} reviewed {entries.length === 1 ? "answer" : "answers"}
               </p>
+              {basicCount > 0 && <p className="mt-1 text-sm font-semibold text-gold-800">{basicCount} {basicCount === 1 ? "answer has" : "answers have"} basic feedback only, so this score is rough. Open {basicCount === 1 ? "it" : "them"} below to try the AI review again.</p>}
               {pending > 0 && <p role="status" className="mt-1 text-sm font-semibold text-gold-800">Still reviewing {pending} {pending === 1 ? "answer" : "answers"}; the score will update.</p>}
               {failed > 0 && <p className="mt-1 text-sm font-semibold text-red-700">{failed} {failed === 1 ? "review" : "reviews"} failed and {failed === 1 ? "isn’t" : "aren’t"} in the average. Retry below.</p>}
             </div>
@@ -131,7 +133,7 @@ export default function SessionSummary() {
                 <Button className="mt-2" size="sm" variant="danger" onClick={() => retry(i)}>Retry review</Button>
               </div>
             )}
-            {entry.feedback && <FeedbackPanel feedback={entry.feedback} />}
+            {entry.feedback && <FeedbackPanel feedback={entry.feedback} onRetry={entry.status === "loading" ? undefined : () => retry(i)} />}
           </div>
         </details>
       ))}
