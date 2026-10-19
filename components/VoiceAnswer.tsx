@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Button from "@/components/ui/Button";
 import { useAudioRecorder, MAX_AUDIO_RECORDING_MS } from "@/hooks/useAudioRecorder";
 import { useSpeechRecognition, joinTranscript, MAX_RECORDING_MS } from "@/hooks/useSpeechRecognition";
+import LiveDeliveryHUD from "@/components/LiveDeliveryHUD";
+import { stopSpeaking } from "@/lib/speech-synthesis";
 import { formatDuration } from "@/lib/session-logic";
 
 interface Props {
@@ -11,10 +13,12 @@ interface Props {
   onChange: (text: string) => void;
   /** Total seconds spent recording for this answer, reported when a recording stops. */
   onSpokenSeconds: (seconds: number) => void;
+  /** Called when recording starts or stops, so the interviewer's voice can pause while you speak. */
+  onRecordingChange?: (recording: boolean) => void;
 }
 
 /** The answer box for voice mode: record to fill it with a live transcript, then edit it freely or just type. */
-export default function VoiceAnswer({ value, onChange, onSpokenSeconds }: Props) {
+export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecordingChange }: Props) {
   const speech = useSpeechRecognition();
   const recorder = useAudioRecorder((blob) => void transcribeBlob(blob));
   const [transcribing, setTranscribing] = useState(false);
@@ -28,6 +32,7 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds }: Props)
   }, [speech.isRecording, speech.finalTranscript]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const recording = speech.isRecording || recorder.isRecording;
+  useEffect(() => onRecordingChange?.(recording), [recording]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!recording) return;
     const id = setInterval(() => setRecordedSeconds((s) => s + 1), 1000);
@@ -49,6 +54,7 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds }: Props)
   }, [speech.isRecording]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggle() {
+    stopSpeaking(); // the interviewer stops talking when you start
     if (speech.isRecording) {
       speech.stop();
     } else {
@@ -134,6 +140,8 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds }: Props)
         className="mt-1 w-full rounded-xl border border-sage-400 bg-white p-3 text-darkslate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 read-only:bg-sage-50"
         placeholder={speech.typingOnly ? "Type your answer here…" : "Press “Start recording” and speak, or type here…"}
       />
+
+      {speech.isRecording && <LiveDeliveryHUD transcript={speech.finalTranscript} seconds={recordedSeconds} />}
 
       {speech.isRecording && (
         <p role="status" className="mt-2 text-sm text-darkslate-600">

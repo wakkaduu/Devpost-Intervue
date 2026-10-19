@@ -47,6 +47,27 @@ function setup() {
 }
 
 describe("interview session", () => {
+  it("typed mode goes straight to the first question, with no voice setup", async () => {
+    setup();
+    expect(await screen.findByLabelText("Your answer")).toBeInTheDocument();
+    expect(screen.queryByText(/Before you start: voice answers/)).toBeNull();
+  });
+
+  it("voice mode shows the setup screen first and does not start the timer until you begin", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    render(
+      <SessionProvider>
+        <InterviewSession category="Behavioral" mode="mic" />
+      </SessionProvider>
+    );
+    expect(await screen.findByText(/Before you start: voice answers/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Your answer")).toBeNull();
+    act(() => { vi.advanceTimersByTime(5000); });
+    await userEvent.click(screen.getByRole("button", { name: "Start the interview" }));
+    expect(await screen.findByLabelText("Time on this question")).toHaveTextContent("0:00");
+    vi.useRealTimers();
+  });
+
   it("blocks an empty answer and makes no AI request", async () => {
     setup();
     await userEvent.click(await screen.findByRole("button", { name: "Next question" }));
@@ -156,6 +177,8 @@ describe("interview session", () => {
         <SessionSummary />
       </SessionProvider>
     );
+    expect(await screen.findByText(/Before you start: voice answers/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Start the interview" }));
     await userEvent.click(await screen.findByRole("button", { name: /Start recording/ }));
     act(() => Rec.last.onresult({ resultIndex: 0, results: [Object.assign([{ transcript: "um I led the project and like shipped it" }], { isFinal: true })] }));
     await new Promise((r) => setTimeout(r, 1100)); // let one second of speaking time pass

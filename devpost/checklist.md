@@ -109,7 +109,7 @@ Build mode: learn
   Learner check: Run a session with the Gemini key temporarily broken and confirm you still get feedback and a notice.
   Commit: `Add provider fallback and transcription route`
 
-- [ ] **11. Interviewer voice, mic check and live delivery HUD**
+- [x] **11. Interviewer voice, mic check and live delivery HUD**
   Becomes usable: The interviewer reads questions aloud (mute, speed), voice setup offers a mic check, and a live HUD shows pace and fillers while speaking.
   Why now: Polish on the voice experience, safe to add after the voice core is proven.
   PRD ref: `prd.md > Extended set` (Interviewer voice; Mic check and live delivery HUD)

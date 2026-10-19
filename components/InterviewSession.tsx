@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
+import VoiceSetup from "@/components/VoiceSetup";
 import VoiceAnswer from "@/components/VoiceAnswer";
 import QuestionDisplay from "@/components/QuestionDisplay";
 import { useSession } from "@/context/SessionContext";
@@ -16,10 +17,15 @@ export default function InterviewSession({ category, mode }: { category: string;
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [spokenSeconds, setSpokenSeconds] = useState(0);
+  const [recording, setRecording] = useState(false);
+  const [begun, setBegun] = useState(false);
 
   useEffect(() => begin(category, mode), [begin, category, mode]);
 
   const position = session ? session.entries.length : 0;
+  // Voice mode starts with a short setup screen, shown once before the first question.
+  const needsSetup = mode === "mic" && !begun && position === 0;
+  const started = !needsSetup;
   const question = session && !session.finished ? session.questions[position] : undefined;
 
   // A new question gets a fresh timer and an empty answer box.
@@ -31,10 +37,10 @@ export default function InterviewSession({ category, mode }: { category: string;
   }, [position]);
 
   useEffect(() => {
-    if (!question) return;
+    if (!question || !started) return;
     const id = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(id);
-  }, [question]);
+  }, [question, started]);
 
   // A session that finishes while this page is open (last answer, or ended early) goes to Results.
   // A finished session left over from before is not redirected: begin() replaces it with a new one.
@@ -48,6 +54,8 @@ export default function InterviewSession({ category, mode }: { category: string;
   if (!session || !question) {
     return <p className="text-forest-100" role="status">Loading your questions…</p>;
   }
+
+  if (needsSetup) return <VoiceSetup questionCount={session.questions.length} onBegin={() => setBegun(true)} />;
 
   const isLast = position === session.questions.length - 1;
 
@@ -75,11 +83,11 @@ export default function InterviewSession({ category, mode }: { category: string;
       </div>
 
       <div className="mt-4">
-        <QuestionDisplay question={question} position={position + 1} total={session.questions.length} />
+        <QuestionDisplay question={question} position={position + 1} total={session.questions.length} paused={recording} />
       </div>
 
       {mode === "mic" ? (
-        <VoiceAnswer key={position} value={answer} onChange={changeAnswer} onSpokenSeconds={setSpokenSeconds} />
+        <VoiceAnswer key={position} value={answer} onChange={changeAnswer} onSpokenSeconds={setSpokenSeconds} onRecordingChange={setRecording} />
       ) : (
         <>
           <label htmlFor="answer" className="mt-4 block text-sm font-semibold text-darkslate-700">Your answer</label>
