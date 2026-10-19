@@ -43,8 +43,8 @@ describe("resolveOAuthSignIn", () => {
 
 describe("availableProviders", () => {
   it("needs both id and secret", () => {
-    expect(availableProviders({})).toEqual({ google: false, github: false });
-    expect(availableProviders({ AUTH_GOOGLE_ID: "x" })).toEqual({ google: false, github: false });
-    expect(availableProviders({ AUTH_GOOGLE_ID: "x", AUTH_GOOGLE_SECRET: "y", AUTH_GITHUB_ID: "a", AUTH_GITHUB_SECRET: "b" })).toEqual({ google: true, github: true });
+    expect(availableProviders({})).toEqual({ google: false, github: false, facebook: false });
+    expect(availableProviders({ AUTH_GOOGLE_ID: "x" })).toEqual({ google: false, github: false, facebook: false });
+    expect(availableProviders({ AUTH_GOOGLE_ID: "x", AUTH_GOOGLE_SECRET: "y", AUTH_GITHUB_ID: "a", AUTH_GITHUB_SECRET: "b" })).toEqual({ google: true, github: true, facebook: false });
   });
 });

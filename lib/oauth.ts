@@ -51,5 +51,7 @@ export function availableProviders(env: Record<string, string | undefined> = pro
   return {
     google: Boolean(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET),
     github: Boolean(env.AUTH_GITHUB_ID && env.AUTH_GITHUB_SECRET),
+    // Shown on the login page but not built yet.
+    facebook: false,
   };
 }

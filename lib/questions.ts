@@ -1,6 +1,6 @@
 import type { Question } from "@/types";
 import questionsData from "@/data/questions.json";
-import { TRACK_GROUPS, type TrackGroup } from "@/lib/tracks";
+import { TRACK_GROUPS, type Track } from "@/lib/tracks";
 
 const bank = questionsData as Record<string, Question[]>;
 
@@ -33,15 +33,13 @@ export function sessionLength(track: string): { questions: number; minutes: numb
   return { questions, minutes: questions * MINUTES_PER_QUESTION };
 }
 
-/** Filters the grouped track list by a search string; groups with no match are dropped. */
-export function filterTrackGroups(query: string): TrackGroup[] {
+/** All 52 tracks in one flat list (the groups are only an internal ordering, never shown). */
+export const ALL_TRACKS: Track[] = TRACK_GROUPS.flatMap((group) => group.tracks);
+
+/** Tracks whose name or description contains the search text. An empty search returns every track. */
+export function filterTracks(query: string): Track[] {
   const q = query.trim().toLowerCase();
-  if (!q) return TRACK_GROUPS;
-  return TRACK_GROUPS.map((group) => {
-    const groupMatches = group.name.toLowerCase().includes(q);
-    const tracks = groupMatches ? group.tracks : group.tracks.filter((t) => t.name.toLowerCase().includes(q));
-    return { ...group, tracks };
-  }).filter((group) => group.tracks.length > 0);
+  return q ? ALL_TRACKS.filter((t) => t.name.toLowerCase().includes(q)) : ALL_TRACKS;
 }
 
 export function getTrackIcon(track: string): string {

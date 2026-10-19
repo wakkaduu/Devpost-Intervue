@@ -160,6 +160,8 @@ Build mode: learn
 - [x] Track picker moved to the left as a drawer that opens and closes from the header and the start card, with keyboard and screen-reader support (learner request during final review)
 - [x] Full-width layout: pages use the whole window (two- and three-column on wide screens), the track list is a docked left panel on Home, and each screen was re-laid out (learner request during final review)
 - [x] Motion and richer disclosure: animated accordions for answers and track groups, sliding segmented controls, drawer slide, score count-up, chart draw-in, staggered entrances, skeleton loaders, all disabled by prefers-reduced-motion (learner request during final review)
+- [x] Track sidebar shows all 52 tracks at once in a single flat list, with no sections (learner request during final review)
+- [x] Login shows GitHub, Google and Facebook buttons with their icons; providers not set up yet are disabled and marked "Soon" (learner request during final review)
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

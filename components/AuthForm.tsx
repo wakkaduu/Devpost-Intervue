@@ -8,6 +8,7 @@ import { validateRegistration, type FieldErrors } from "@/lib/auth-validation";
 import { safeCallbackPath } from "@/lib/safe-redirect";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import Logo from "@/components/Logo";
+import SocialSignIn, { type SocialAvailability } from "@/components/SocialSignIn";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import PasswordInput from "@/components/ui/PasswordInput";
 
@@ -52,14 +53,14 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
   const [code, setCode] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
-  const [providers, setProviders] = useState<{ google: boolean; github: boolean }>({ google: false, github: false });
+  const [providers, setProviders] = useState<SocialAvailability | null>(null);
 
   // Show a social button only for providers the server has configured.
   useEffect(() => {
     fetch("/api/auth/providers-available")
       .then((r) => r.json())
-      .then(setProviders)
-      .catch(() => {});
+      .then((p) => setProviders({ github: !!p.github, google: !!p.google, facebook: !!p.facebook }))
+      .catch(() => setProviders({ github: false, google: false, facebook: false }));
   }, []);
 
   useEffect(() => {
@@ -243,21 +244,10 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
         options={[{ value: "signin", label: "Sign in" }, { value: "signup", label: "Create account" }]}
       />
 
-      {(providers.google || providers.github) && (
-        <div className="mt-4 space-y-2">
-          {providers.google && (
-            <Button variant="secondary" size="lg" fullWidth onClick={() => signIn("google", { callbackUrl: safeCallbackPath(callbackUrl) })}>
-              Continue with Google
-            </Button>
-          )}
-          {providers.github && (
-            <Button variant="secondary" size="lg" fullWidth onClick={() => signIn("github", { callbackUrl: safeCallbackPath(callbackUrl) })}>
-              Continue with GitHub
-            </Button>
-          )}
-          <p className="pt-1 text-center text-xs text-darkslate-600">or use your email</p>
-        </div>
-      )}
+      <div className="mt-4">
+        <SocialSignIn availability={providers} callbackUrl={callbackUrl} />
+        <p className="pt-3 text-center text-xs text-darkslate-600">or use your email</p>
+      </div>
       {oauthError && <ErrorMessage className="mt-4">{oauthError}</ErrorMessage>}
 
       <form onSubmit={submit} noValidate className="mt-2">

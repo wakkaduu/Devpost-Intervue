@@ -160,17 +160,31 @@ describe("track panel on a wide Home page", () => {
     expect(await screen.findByRole("button", { name: "Browse tracks" })).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("groups open and close, the chosen track's group starts open, and searching opens matches", async () => {
+  it("lists all 52 tracks at once in one flat list, with no sections to open", async () => {
     setup();
     const dock = within(await screen.findByRole("complementary", { name: "Interview tracks" }));
-    // Behavioral is the default track, in "General & Foundational"
-    expect(dock.getByRole("button", { name: /General & Foundational/ })).toHaveAttribute("aria-expanded", "true");
-    expect(dock.getByRole("button", { name: /Tech & Software/ })).toHaveAttribute("aria-expanded", "false");
-    await userEvent.click(dock.getByRole("button", { name: /Tech & Software/ }));
-    expect(dock.getByRole("button", { name: /Tech & Software/ })).toHaveAttribute("aria-expanded", "true");
+    const list = dock.getByRole("list", { name: "Interview tracks" });
+    expect(within(list).getAllByRole("listitem")).toHaveLength(52);
+    expect(dock.getByText("52 tracks")).toBeInTheDocument();
+    // no collapsible group headers, and no group names
+    expect(dock.queryAllByRole("heading")).toHaveLength(0);
+    expect(dock.queryByText(/Tech & Software/)).toBeNull();
+    expect(dock.queryByText(/General & Foundational/)).toBeNull();
+    // every track is reachable right away, including ones from the last group
+    expect(dock.getByRole("button", { name: /Media, Journalism/ })).toBeInTheDocument();
+    expect(dock.getByRole("button", { name: /Behavioral/ })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("searching narrows the same flat list and says how many match", async () => {
+    setup();
+    const dock = within(await screen.findByRole("complementary", { name: "Interview tracks" }));
     await userEvent.type(dock.getByLabelText("Search tracks"), "nursing");
-    expect(dock.getByRole("button", { name: /Medicine & Healthcare/ })).toHaveAttribute("aria-expanded", "true");
     expect(dock.getByText("1 track")).toBeInTheDocument();
+    expect(within(dock.getByRole("list")).getAllByRole("listitem")).toHaveLength(1);
+    await userEvent.clear(dock.getByLabelText("Search tracks"));
+    expect(within(dock.getByRole("list")).getAllByRole("listitem")).toHaveLength(52);
+    await userEvent.type(dock.getByLabelText("Search tracks"), "zzzz");
+    expect(dock.getByText(/No tracks match/)).toBeInTheDocument();
   });
 
   it("does not take over other pages: there it is a drawer opened from the header", async () => {

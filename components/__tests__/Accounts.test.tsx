@@ -159,24 +159,49 @@ describe("AuthForm", () => {
 });
 
 describe("Social sign-in buttons", () => {
-  it("shows only the providers the server has configured, and starts that provider's sign-in", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ google: false, github: true }) })));
+  const providers = (p: object) => vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => p })));
+
+  it("shows GitHub, Google and Facebook with their icons, and only the configured ones are usable", async () => {
+    providers({ google: false, github: true, facebook: false });
     render(<AuthForm callbackUrl="/history" />);
     const gh = await screen.findByRole("button", { name: "Continue with GitHub" });
-    expect(screen.queryByRole("button", { name: "Continue with Google" })).toBeNull();
+    expect(gh).toBeEnabled();
+    expect(gh.querySelector("svg")).not.toBeNull();
+    const google = screen.getByRole("button", { name: "Continue with Google (coming soon)" });
+    const facebook = screen.getByRole("button", { name: "Continue with Facebook (coming soon)" });
+    expect(google).toBeDisabled();
+    expect(facebook).toBeDisabled();
+    expect(google.querySelector("svg")).not.toBeNull();
+    expect(facebook.querySelector("svg")).not.toBeNull();
+    expect(screen.getAllByText("Soon")).toHaveLength(2);
     await userEvent.click(gh);
     expect(h.signIn).toHaveBeenCalledWith("github", { callbackUrl: "/history" });
+    await userEvent.click(facebook);
+    expect(h.signIn).toHaveBeenCalledTimes(1); // a disabled button does nothing
   });
 
-  it("shows no social buttons when none are configured", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ google: false, github: false }) })));
+  it("when Google is configured it becomes usable", async () => {
+    providers({ google: true, github: true, facebook: false });
     render(<AuthForm />);
-    await waitFor(() => expect(fetch).toHaveBeenCalled());
-    expect(screen.queryByText(/Continue with/)).toBeNull();
+    const g = await screen.findByRole("button", { name: "Continue with Google" });
+    expect(g).toBeEnabled();
+    await userEvent.click(g);
+    expect(h.signIn).toHaveBeenCalledWith("google", { callbackUrl: "/" });
+  });
+
+  it("still shows all three, marked coming soon, when none are configured or the check fails", async () => {
+    providers({ google: false, github: false, facebook: false });
+    const { unmount } = render(<AuthForm />);
+    expect(await screen.findByRole("button", { name: "Continue with GitHub (coming soon)" })).toBeDisabled();
+    unmount();
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
+    render(<AuthForm />);
+    expect(await screen.findByRole("button", { name: "Continue with Facebook (coming soon)" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Continue with GitHub (coming soon)" })).toBeDisabled();
   });
 
   it("explains a refused social sign-in", () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ google: false, github: false }) })));
+    providers({ google: false, github: false, facebook: false });
     render(<AuthForm authError="AccessDenied" />);
     expect(screen.getByRole("alert")).toHaveTextContent(/verified with the provider/);
   });

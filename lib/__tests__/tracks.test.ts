@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TRACK_GROUPS } from "@/lib/tracks";
-import { filterTrackGroups, getTracks, isValidTrack, sessionLength, splitTrackName } from "@/lib/questions";
+import { ALL_TRACKS, filterTracks, getTracks, isValidTrack, sessionLength, splitTrackName } from "@/lib/questions";
 import { buildInterviewUrl } from "@/lib/start-practice";
 
 describe("tracks", () => {
@@ -18,10 +18,16 @@ describe("tracks", () => {
     expect(splitTrackName("Behavioral")).toEqual({ title: "Behavioral", blurb: "" });
   });
   it("searches tracks and group names", () => {
-    expect(filterTrackGroups("")).toHaveLength(TRACK_GROUPS.length);
-    const nursing = filterTrackGroups("nursing").flatMap((g) => g.tracks);
+    expect(filterTracks("")).toHaveLength(52);
+    expect(filterTracks("   ")).toHaveLength(52);
+    const nursing = filterTracks("NURSING");
     expect(nursing.length).toBeGreaterThan(0);
-    expect(filterTrackGroups("zzzzqqq")).toEqual([]);
+    expect(nursing.every((t) => t.name.toLowerCase().includes("nursing"))).toBe(true);
+    expect(filterTracks("zzzzqqq")).toEqual([]);
+  });
+  it("lists every track once, in one flat list", () => {
+    expect(ALL_TRACKS).toHaveLength(52);
+    expect(new Set(ALL_TRACKS.map((t) => t.name)).size).toBe(52);
   });
   it("sizes a session", () => {
     expect(sessionLength("Behavioral")).toEqual({ questions: 5, minutes: 15 });
