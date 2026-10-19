@@ -27,35 +27,34 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
   const [recordedSeconds, setRecordedSeconds] = useState(0);
   const base = useRef("");
 
-  // While recording, the answer is whatever was there before plus what has been transcribed so far.
-  useEffect(() => {
-    if (speech.isRecording) onChange(joinTranscript([base.current, speech.finalTranscript]));
-  }, [speech.isRecording, speech.finalTranscript]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Anything the microphone is doing: starting up, listening, or finishing the last words.
+  const speechActive = speech.isRecording || speech.isStopping;
+  const engaged = speech.isRecording || speech.isStopping || recorder.isRecording || recorder.isStarting;
+  // Only time spent with the microphone really live counts towards speaking time, not the start-up wait.
+  const listening = speech.isListening || recorder.isRecording;
 
-  const recording = speech.isRecording || recorder.isRecording;
-  useEffect(() => onRecordingChange?.(recording), [recording]); // eslint-disable-line react-hooks/exhaustive-deps
+  // While recording (and until the last words arrive after Stop), the answer is what was there before plus the transcript so far.
+  const wasActive = useRef(false);
   useEffect(() => {
-    if (!recording) return;
+    if (speechActive || wasActive.current) onChange(joinTranscript([base.current, speech.finalTranscript]));
+    wasActive.current = speechActive;
+  }, [speechActive, speech.finalTranscript]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => onRecordingChange?.(engaged), [engaged]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!listening) return;
     const id = setInterval(() => setRecordedSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
-  }, [recording]);
+  }, [listening]);
 
   // Speaking time is reported as it grows, so answers submitted mid-recording still carry it.
   useEffect(() => {
     if (recordedSeconds > 0) onSpokenSeconds(recordedSeconds);
   }, [recordedSeconds]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // A final result can land just after stop; make sure the last words are kept.
-  const wasRecording = useRef(false);
-  useEffect(() => {
-    if (wasRecording.current && !speech.isRecording && speech.finalTranscript) {
-      onChange(joinTranscript([base.current, speech.finalTranscript]));
-    }
-    wasRecording.current = speech.isRecording;
-  }, [speech.isRecording]); // eslint-disable-line react-hooks/exhaustive-deps
-
   function toggle() {
     stopSpeaking(); // the interviewer stops talking when you start
+    if (speech.isStopping) return; // the last words are still arriving
     if (speech.isRecording) {
       speech.stop();
     } else {
@@ -91,6 +90,8 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
 
   async function toggleAudio() {
     setAudioError(null);
+    stopSpeaking();
+    if (recorder.isStarting || transcribing) return;
     if (!recorder.isRecording) {
       base.current = value;
       void recorder.start();
@@ -109,25 +110,37 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
           <Button
             variant={recorder.isRecording ? "danger" : "primary"}
             size="sm"
-            loading={transcribing}
+            loading={transcribing || recorder.isStarting}
             onClick={() => void toggleAudio()}
             aria-pressed={recorder.isRecording}
           >
             {transcribing
               ? "Transcribing…"
-              : recorder.isRecording
-                ? `■ Stop and transcribe (${formatDuration(recordedSeconds)})`
-                : "● Record audio"}
+              : recorder.isStarting
+                ? "Starting microphone…"
+                : recorder.isRecording
+                  ? `■ Stop and transcribe (${formatDuration(recordedSeconds)})`
+                  : "● Record audio"}
           </Button>
         )}
         {!speech.typingOnly && (
           <Button
-            variant={speech.isRecording ? "danger" : "primary"}
+            variant={speech.isListening ? "danger" : "primary"}
             size="sm"
+            loading={speech.isStopping}
             onClick={toggle}
-            aria-pressed={speech.isRecording}
+            aria-pressed={speech.isListening}
+            className={speech.isListening ? "animate-pulse-ring" : ""}
           >
-            {speech.isRecording ? `■ Stop recording (${formatDuration(recordedSeconds)})` : value.trim() ? "● Record more" : "● Start recording"}
+            {speech.isStopping
+              ? "Finishing…"
+              : speech.isStarting
+                ? "Starting microphone… (cancel)"
+                : speech.isListening
+                  ? `■ Stop recording (${formatDuration(recordedSeconds)})`
+                  : value.trim()
+                    ? "● Record more"
+                    : "● Start recording"}
           </Button>
         )}
       </div>
@@ -135,24 +148,39 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
       <textarea
         id="answer"
         value={value}
-        readOnly={recording || transcribing}
+        readOnly={engaged || transcribing}
         onChange={(e) => onChange(e.target.value)}
         rows={8}
         className="mt-1 w-full rounded-xl border border-sage-400 bg-white p-3 text-darkslate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 read-only:bg-sage-50"
         placeholder={speech.typingOnly ? "Type your answer here…" : "Press “Start recording” and speak, or type here…"}
       />
 
-      {speech.isRecording && <LiveDeliveryHUD transcript={speech.finalTranscript} seconds={recordedSeconds} />}
+      {speech.isListening && <LiveDeliveryHUD transcript={speech.finalTranscript} seconds={recordedSeconds} />}
 
-      {speech.isRecording && (
-        <p role="status" className="mt-2 text-sm text-darkslate-600">
-          <span className="font-semibold text-red-700">Listening…</span>{" "}
-          {speech.interimTranscript && <span className="italic text-darkslate-500">{speech.interimTranscript}</span>}
+      {speech.isStarting && (
+        <p role="status" className="mt-2 text-sm font-semibold text-gold-800">
+          Starting the microphone… wait for “Listening” before you speak. If your browser asks, choose Allow.
         </p>
       )}
+      {speech.isListening && (
+        <p role="status" className="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-darkslate-600">
+          <span aria-hidden="true" className="inline-block h-2.5 w-2.5 animate-pulse-ring rounded-full bg-red-600" />
+          <span className="font-semibold text-red-700">Listening… speak now</span>
+          {speech.interimTranscript && <span className="italic text-darkslate-600">{speech.interimTranscript}</span>}
+        </p>
+      )}
+      {speech.isStopping && (
+        <p role="status" className="mt-2 text-sm font-semibold text-darkslate-700">Finishing your last words…</p>
+      )}
 
+      {recorder.isStarting && (
+        <p role="status" className="mt-2 text-sm font-semibold text-gold-800">Starting the microphone… wait for “Recording” before you speak. If your browser asks, choose Allow.</p>
+      )}
       {recorder.isRecording && (
-        <p role="status" className="mt-2 text-sm"><span className="font-semibold text-red-700">Recording…</span> <span className="text-darkslate-600">Press stop and we’ll turn it into text.</span></p>
+        <p role="status" className="mt-2 flex items-center gap-2 text-sm">
+          <span aria-hidden="true" className="inline-block h-2.5 w-2.5 animate-pulse-ring rounded-full bg-red-600" />
+          <span className="font-semibold text-red-700">Recording…</span> <span className="text-darkslate-600">Press stop and we’ll turn it into text.</span>
+        </p>
       )}
       {recorder.autoStopped && (
         <p role="status" className="mt-2 text-sm font-semibold text-gold-800">Recording stopped automatically after {MAX_AUDIO_RECORDING_MS / 60000} minutes.</p>

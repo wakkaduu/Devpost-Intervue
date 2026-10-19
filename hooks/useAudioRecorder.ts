@@ -10,6 +10,7 @@ const TYPES = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;c
 export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
   const [isSupported, setIsSupported] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoStopped, setAutoStopped] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -34,6 +35,7 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
   const start = useCallback(async () => {
     setError(null);
     setAutoStopped(false);
+    setIsStarting(true); // shown at once: opening the microphone (and its permission prompt) takes a moment
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -52,12 +54,14 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
       recorderRef.current = recorder;
       recorder.start();
       setIsRecording(true);
+      setIsStarting(false);
       timerRef.current = setTimeout(() => {
         setAutoStopped(true);
         if (recorder.state !== "inactive") recorder.stop();
       }, MAX_AUDIO_RECORDING_MS);
     } catch (err) {
       release();
+      setIsStarting(false);
       const name = (err as { name?: string })?.name;
       setError(
         name === "NotAllowedError" || name === "PermissionDeniedError"
@@ -88,5 +92,5 @@ export function useAudioRecorder(onAutoStop?: (blob: Blob | null) => void) {
     }
   }, [release]);
 
-  return { isSupported, isRecording, error, autoStopped, start, stop };
+  return { isSupported, isRecording, isStarting, error, autoStopped, start, stop };
 }

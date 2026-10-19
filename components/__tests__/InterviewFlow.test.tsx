@@ -167,7 +167,7 @@ describe("interview session", () => {
   it("spoken answers get delivery feedback and are reviewed as spoken", async () => {
     class Rec {
       static last: Rec;
-      onresult: any; onerror: any; onend: any;
+      onresult: any; onerror: any; onend: any; onaudiostart: any;
       start = vi.fn(); stop = vi.fn(); abort = vi.fn();
       constructor() { Rec.last = this; }
     }
@@ -181,9 +181,11 @@ describe("interview session", () => {
     expect(await screen.findByText(/Before you start: voice answers/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Start the interview" }));
     await userEvent.click(await screen.findByRole("button", { name: /Start recording/ }));
+    act(() => Rec.last.onaudiostart?.());
     act(() => Rec.last.onresult({ resultIndex: 0, results: [Object.assign([{ transcript: "um I led the project and like shipped it" }], { isFinal: true })] }));
     await new Promise((r) => setTimeout(r, 1100)); // let one second of speaking time pass
     await userEvent.click(screen.getByRole("button", { name: /Stop recording/ }));
+    act(() => Rec.last.onend?.());
     await userEvent.click(screen.getByRole("button", { name: "End early" }));
     expect(await screen.findByRole("region", { name: "Delivery feedback" })).toHaveTextContent("Filler words");
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).mode).toBe("mic");

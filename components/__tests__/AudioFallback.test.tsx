@@ -54,6 +54,26 @@ describe("audio transcription fallback", () => {
     expect(stopTrack).toHaveBeenCalled(); // the microphone is released
   });
 
+  it("shows 'Starting microphone' straight away while the browser opens the microphone, then 'Recording'", async () => {
+    let release!: (s: unknown) => void;
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: vi.fn(() => new Promise((r) => { release = r; })) } });
+    await userEvent.click(await openFallback());
+    expect(await screen.findByRole("button", { name: /Starting microphone/ })).toBeInTheDocument();
+    expect(screen.getByText(/wait for “Recording” before you speak/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Stop and transcribe/ })).toBeNull();
+    await act(async () => release({ getTracks: () => [{ stop: stopTrack }] }));
+    expect(await screen.findByRole("button", { name: /Stop and transcribe/ })).toBeInTheDocument();
+    expect(screen.queryByText(/wait for “Recording”/)).toBeNull();
+  });
+
+  it("if the microphone can't be opened, the 'starting' state ends and says why", async () => {
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: vi.fn(async () => { throw Object.assign(new Error("x"), { name: "NotAllowedError" }); }) } });
+    await userEvent.click(await openFallback());
+    expect(await screen.findByText(/Microphone access was denied/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Record audio/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Starting microphone/ })).toBeNull();
+  });
+
   it("shows the server's message when transcription fails, and typing still works", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, json: async () => ({ error: "Transcription is unavailable right now. Please type your answer instead." }) })));
     await userEvent.click(await openFallback());

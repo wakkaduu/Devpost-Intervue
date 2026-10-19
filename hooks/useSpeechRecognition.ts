@@ -22,9 +22,23 @@ export function joinTranscript(parts: string[]): string {
   return parts.join(" ").replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Chrome takes a moment to connect to its speech service after start() (and waits for you to click Allow the first
+ * time). Until it reports that the microphone is live, the app is "starting", not "listening", so people don't
+ * begin talking into a microphone that isn't on yet.
+ */
+export type SpeechPhase = "idle" | "starting" | "listening" | "stopping";
+
+/** If the engine reports it started but never says audio is flowing, assume it is live after this long. */
+export const READY_FALLBACK_MS = 1500;
+/** If it never reports starting at all (for example the permission prompt is ignored), give up after this long. */
+export const STARTUP_TIMEOUT_MS = 12_000;
+/** After Stop, wait this long at most for the engine to deliver its last words and end. */
+export const STOP_GRACE_MS = 3000;
+
 export function useSpeechRecognition() {
   const [isSupported, setIsSupported] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
+  const [phase, setPhaseState] = useState<SpeechPhase>("idle");
   const [finalTranscript, setFinalTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -36,22 +50,70 @@ export function useSpeechRecognition() {
   const finalsRef = useRef<string[]>([]);
   const wantRunning = useRef(false);
   const retriesRef = useRef(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const phaseRef = useRef<SpeechPhase>("idle");
+  const maxTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setPhase = useCallback((p: SpeechPhase) => {
+    phaseRef.current = p;
+    setPhaseState(p);
+  }, []);
 
   useEffect(() => setIsSupported(!!getApi()), []);
 
+  const clearTimers = useCallback(() => {
+    for (const t of [maxTimer, startTimer, stopTimer]) {
+      if (t.current) clearTimeout(t.current);
+      t.current = null;
+    }
+  }, []);
+
+  /** Everything is finished: no more words are coming. */
+  const finalize = useCallback(() => {
+    clearTimers();
+    wantRunning.current = false;
+    setInterimTranscript("");
+    setPhase("idle");
+  }, [clearTimers, setPhase]);
+
+  /** Stop at once (an error happened, or the person cancelled before it even started). */
   const halt = useCallback(() => {
     wantRunning.current = false;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = null;
     try {
-      recRef.current?.stop();
+      recRef.current?.abort();
     } catch {
       // already stopped
     }
-    setInterimTranscript("");
-    setIsRecording(false);
-  }, []);
+    finalize();
+  }, [finalize]);
+
+  /** Ask the engine to finish. It still delivers the last words you spoke, so we wait for it to end. */
+  const finish = useCallback(() => {
+    if (phaseRef.current !== "listening") return;
+    wantRunning.current = false;
+    if (maxTimer.current) clearTimeout(maxTimer.current);
+    maxTimer.current = null;
+    setPhase("stopping");
+    try {
+      recRef.current?.stop();
+    } catch {
+      finalize();
+      return;
+    }
+    stopTimer.current = setTimeout(finalize, STOP_GRACE_MS);
+  }, [finalize, setPhase]);
+
+  const markReady = useCallback(() => {
+    if (phaseRef.current !== "starting") return;
+    if (startTimer.current) clearTimeout(startTimer.current);
+    startTimer.current = null;
+    setPhase("listening");
+    maxTimer.current = setTimeout(() => {
+      setAutoStopped(true);
+      finish();
+    }, MAX_RECORDING_MS);
+  }, [finish, setPhase]);
 
   const start = useCallback(() => {
     const Api = getApi();
@@ -60,6 +122,7 @@ export function useSpeechRecognition() {
       setError("This browser can't transcribe speech live. You can record audio for us to transcribe, or type your answer.");
       return;
     }
+    if (phaseRef.current !== "idle") return;
     setError(null);
     setAutoStopped(false);
     finalsRef.current = [];
@@ -70,7 +133,17 @@ export function useSpeechRecognition() {
     rec.interimResults = true;
     rec.lang = "en-US";
 
+    // The microphone is really live once audio capture begins (or, in engines that don't say so, once words arrive).
+    rec.onaudiostart = () => markReady();
+    rec.onspeechstart = () => markReady();
+    rec.onstart = () => {
+      // Some engines never send "audio start": trust "started" after a short moment.
+      if (startTimer.current) clearTimeout(startTimer.current);
+      startTimer.current = setTimeout(markReady, READY_FALLBACK_MS);
+    };
+
     rec.onresult = (event: SpeechRecognitionEvent) => {
+      markReady();
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
@@ -96,47 +169,64 @@ export function useSpeechRecognition() {
       halt();
     };
 
-    // Chrome ends continuous recognition on its own after a while; restart unless the user stopped it.
     rec.onend = () => {
-      if (!wantRunning.current) return;
-      try {
-        rec.start();
-      } catch {
-        halt();
+      // Chrome ends continuous recognition on its own now and then; restart unless the person stopped it.
+      if (wantRunning.current && phaseRef.current === "listening") {
+        try {
+          rec.start();
+        } catch {
+          halt();
+        }
+        return;
       }
+      // After Stop, "end" means the last words have been delivered.
+      if (phaseRef.current === "stopping") finalize();
     };
 
     recRef.current = rec;
     wantRunning.current = true;
+    setPhase("starting");
     try {
       rec.start();
     } catch {
       setError("Couldn't start the microphone. Try again or type your answer.");
       wantRunning.current = false;
+      setPhase("idle");
       return;
     }
-    setIsRecording(true);
-    timerRef.current = setTimeout(() => {
-      setAutoStopped(true);
+    startTimer.current = setTimeout(() => {
+      if (phaseRef.current !== "starting") return;
+      setError("The microphone didn't start. Check that you allowed it, then try again, or type your answer.");
       halt();
-    }, MAX_RECORDING_MS);
-  }, [halt]);
+    }, STARTUP_TIMEOUT_MS);
+  }, [finalize, halt, markReady, setPhase]);
 
-  const stop = useCallback(() => halt(), [halt]);
+  /** Stops listening. If it hasn't started yet this cancels; otherwise it waits briefly for the last words. */
+  const stop = useCallback(() => {
+    if (phaseRef.current === "starting") halt();
+    else finish();
+  }, [finish, halt]);
 
   useEffect(() => () => {
     wantRunning.current = false;
-    if (timerRef.current) clearTimeout(timerRef.current);
+    clearTimers();
     try {
       recRef.current?.abort();
     } catch {
       // ignore
     }
-  }, []);
+  }, [clearTimers]);
 
   return {
     isSupported,
-    isRecording,
+    /** The microphone is engaged: starting up or listening. */
+    isRecording: phase === "starting" || phase === "listening",
+    /** Asked to start but not live yet: don't talk yet. */
+    isStarting: phase === "starting",
+    /** The microphone is live and capturing. */
+    isListening: phase === "listening",
+    /** Stop was pressed; waiting for the last words to arrive. */
+    isStopping: phase === "stopping",
     finalTranscript,
     interimTranscript,
     error,
