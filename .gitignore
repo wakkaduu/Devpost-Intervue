@@ -1,0 +1,15 @@
+/devpost/learner-profile.md
+.env
+.env.*
+!.env.example
+
+# dependencies and build output
+/node_modules
+/.next/
+/out/
+/coverage
+*.tsbuildinfo
+next-env.d.ts
+.env*.local
+.DS_Store
+npm-debug.log*
