@@ -1,9 +1,9 @@
 import Link from "next/link";
-import AnswerPractice from "@/components/AnswerPractice";
+import InterviewSession from "@/components/InterviewSession";
 import { buttonClasses } from "@/components/ui/button-classes";
-import { getQuestions, isValidTrack, splitTrackName } from "@/lib/questions";
+import { isValidTrack, splitTrackName } from "@/lib/questions";
+import type { PracticeMode } from "@/lib/mode-storage";
 
-// Single-question stand-in; the full question-by-question session is the next slice.
 export default async function InterviewPage({
   searchParams,
 }: {
@@ -23,15 +23,15 @@ export default async function InterviewPage({
     );
   }
 
-  const question = getQuestions(category)[0];
+  const practiceMode: PracticeMode = mode === "typed" ? "typed" : "mic";
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:py-12">
       <h1 className="text-2xl font-bold text-white">{splitTrackName(category).title}</h1>
-      {mode === "mic" && (
-        <p className="mb-4 mt-1 text-sm text-gold-300">Voice answers are coming in a later step. For now, type your answer.</p>
+      {practiceMode === "mic" && (
+        <p className="mt-1 text-sm text-gold-300">Voice answers are coming in a later step. For now, type your answer.</p>
       )}
       <div className="mt-4">
-        <AnswerPractice question={question} />
+        <InterviewSession category={category} mode={practiceMode} />
       </div>
     </div>
   );

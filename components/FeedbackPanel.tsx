@@ -1,6 +1,6 @@
 import type { Feedback } from "@/types";
 
-export default function ReviewCard({ feedback }: { feedback: Feedback }) {
+export default function FeedbackPanel({ feedback }: { feedback: Feedback }) {
   return (
     <section aria-label="Your review" className="rounded-2xl bg-sage-100 p-5 sm:p-6 space-y-5 text-darkslate-900">
       <div className="flex items-center gap-4">

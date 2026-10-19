@@ -29,7 +29,7 @@ Build mode: learn
   Learner check: Pick a track, switch to Written, reload, and confirm your mode is remembered and Start takes you to that track's questions.
   Commit: `Add Home page with track picker and mode toggle`
 
-- [ ] **3. A full multi-question session ending in Results**
+- [x] **3. A full multi-question session ending in Results**
   Becomes usable: Answer several questions in order (timer, next/finish, end early), then see the Results page with an average score, a verdict label, and per-answer coaching.
   Why now: Completes the written-answer core loop end to end, so the app is demoable before voice and accounts.
   PRD ref: `prd.md > The Core Journey` (steps 4-7), `prd.md > Results and debrief`, `prd.md > States and Boundaries`

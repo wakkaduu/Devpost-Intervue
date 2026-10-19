@@ -31,3 +31,14 @@ export interface ReviewRequest {
   /** Focus points already given earlier in the session, so the AI does not repeat them. */
   priorFocus?: string[];
 }
+
+/** One answered question in a practice session. */
+export interface SessionEntry {
+  question: string;
+  answer: string;
+  durationSec: number;
+  /** loading: review in flight. done: feedback arrived. error: the review failed and can be retried. */
+  status: "loading" | "done" | "error";
+  feedback?: Feedback;
+  error?: string;
+}
