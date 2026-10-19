@@ -10,6 +10,8 @@ import QuestionDisplay from "@/components/QuestionDisplay";
 import { useSession } from "@/context/SessionContext";
 import { formatDuration } from "@/lib/session-logic";
 import type { PracticeMode } from "@/lib/mode-storage";
+import { browserVoiceUsable } from "@/lib/speech-synthesis";
+import { prefetchQuestionAudio } from "@/lib/server-voice";
 import { clearDraft, loadDraft, saveDraft, type SessionDraft } from "@/lib/session-draft";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -45,6 +47,21 @@ export default function InterviewSession({ category, mode }: { category: string;
       setGate("ready");
     }
   }, [begin, hasActive, category, mode]);
+
+  // If this browser has no voice of its own, start fetching the first question's audio now (during the voice setup
+  // screen or the first moments), so "Listen" doesn't make people wait for the server to speak it.
+  const firstQuestion = session?.questions[0]?.text;
+  const sessionId = session?.id;
+  useEffect(() => {
+    if (!firstQuestion) return;
+    let cancelled = false;
+    void browserVoiceUsable().then((usable) => {
+      if (!cancelled && !usable) prefetchQuestionAudio(firstQuestion);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, firstQuestion]);
 
   function resumeDraft() {
     if (!draft) return;
@@ -181,7 +198,7 @@ export default function InterviewSession({ category, mode }: { category: string;
         </div>
 
         <div key={position} className="mt-6 animate-fade-up">
-          <QuestionDisplay question={question} position={position + 1} total={total} paused={recording} />
+          <QuestionDisplay question={question} position={position + 1} total={total} paused={recording} upcoming={session.questions[position + 1]?.text} />
         </div>
       </section>
 

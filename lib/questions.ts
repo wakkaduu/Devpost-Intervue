@@ -49,3 +49,11 @@ export function getTrackIcon(track: string): string {
   }
   return "📋";
 }
+
+let questionTexts: Set<string> | null = null;
+/** True if `text` is exactly one of the questions in the bank. Used so the speech endpoint only ever reads our own questions aloud. */
+export function isKnownQuestion(text: unknown): text is string {
+  if (typeof text !== "string") return false;
+  questionTexts ??= new Set(Object.values(bank).flatMap((qs) => qs.map((q) => q.text)));
+  return questionTexts.has(text);
+}

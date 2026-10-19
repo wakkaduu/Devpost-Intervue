@@ -2,17 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import Button from "@/components/ui/Button";
-import {
-  SPEEDS, getInterviewerMuted, getInterviewerSpeed, isSpeechSynthesisSupported,
-  setInterviewerMuted, setInterviewerSpeed, speak, stopSpeaking,
-} from "@/lib/speech-synthesis";
+import { SPEEDS, getInterviewerMuted, getInterviewerSpeed, setInterviewerMuted, setInterviewerSpeed } from "@/lib/speech-synthesis";
+import { speakQuestion, stopAllSpeech } from "@/lib/interviewer-voice";
+import { prefetchQuestionAudio } from "@/lib/server-voice";
 
 /**
- * Lets the interviewer read the question aloud. Auto-read can be muted, but the Listen button always
- * works when the browser can speak, so hearing a question again is never more than one click away.
+ * Lets the interviewer read the question aloud, with the browser's voice or, when the browser has none, the
+ * server's. Auto-read can be muted, but the Listen button always works, so hearing a question again is
+ * never more than one click away. `upcoming` is the next question, fetched ahead of time when the server's voice is in use.
  */
-export default function InterviewerVoiceControls({ text, paused }: { text: string; paused?: boolean }) {
-  const [supported, setSupported] = useState(false);
+export default function InterviewerVoiceControls({ text, paused, upcoming }: { text: string; paused?: boolean; upcoming?: string }) {
+  const [ready_, setReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [usingServer, setUsingServer] = useState(false);
   const [muted, setMuted] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [speaking, setSpeaking] = useState(false);
@@ -21,7 +23,7 @@ export default function InterviewerVoiceControls({ text, paused }: { text: strin
   const speedRef = useRef(1);
 
   useEffect(() => {
-    setSupported(isSpeechSynthesisSupported());
+    setReady(true);
     setMuted(getInterviewerMuted());
     const s = getInterviewerSpeed();
     setSpeed(s);
@@ -31,31 +33,41 @@ export default function InterviewerVoiceControls({ text, paused }: { text: strin
 
   function say() {
     setHint(null);
-    speak(text, speedRef.current, {
+    void speakQuestion(text, speedRef.current, {
+      onSource: (src) => setUsingServer(src === "server"),
+      onLoading: setLoading,
       onStart: () => setSpeaking(true),
       onEnd: () => setSpeaking(false),
       onError: (blocked) => {
         setSpeaking(false);
-        setHint(blocked ? "Your browser needs a click before it will read aloud. Press Listen." : "Couldn't read the question aloud.");
+        setLoading(false);
+        setHint(blocked ? "Your browser needs a click before it will read aloud. Press Listen." : "Couldn’t read the question aloud. You can still read it on screen.");
       },
     });
   }
 
   // Read each new question automatically, unless muted or the person is already recording.
   useEffect(() => {
-    if (!ready.current || !supported || muted || paused) return;
+    if (!ready.current || !ready_ || muted || paused) return;
     say();
     return () => {
-      stopSpeaking();
+      stopAllSpeech();
       setSpeaking(false);
+      setLoading(false);
     };
-  }, [text, supported]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [text, ready_]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // With the server's voice the first request takes a few seconds, so fetch the next question while this one is being answered.
+  useEffect(() => {
+    if (usingServer && upcoming) prefetchQuestionAudio(upcoming);
+  }, [usingServer, upcoming]);
 
   // Stop talking the moment recording starts, so the microphone doesn't hear the interviewer.
   useEffect(() => {
     if (paused) {
-      stopSpeaking();
+      stopAllSpeech();
       setSpeaking(false);
+      setLoading(false);
     }
   }, [paused]);
 
@@ -64,8 +76,9 @@ export default function InterviewerVoiceControls({ text, paused }: { text: strin
     setMuted(next);
     setInterviewerMuted(next);
     if (next) {
-      stopSpeaking();
+      stopAllSpeech();
       setSpeaking(false);
+      setLoading(false);
     }
   }
 
@@ -80,27 +93,25 @@ export default function InterviewerVoiceControls({ text, paused }: { text: strin
       <Button
         size="sm"
         variant="secondary"
-        disabled={!supported}
-        onClick={speaking ? () => { stopSpeaking(); setSpeaking(false); } : say}
+        onClick={speaking || loading ? () => { stopAllSpeech(); setSpeaking(false); setLoading(false); } : say}
         aria-pressed={speaking}
       >
-        {speaking ? "■ Stop" : "🔊 Listen"}
+        {loading && <span aria-hidden="true" className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" />}
+        {loading ? "Preparing voice…" : speaking ? "■ Stop" : "🔊 Listen"}
       </Button>
-      <Button size="sm" variant="ghost" disabled={!supported} onClick={toggleMute} aria-pressed={muted}>
+      <Button size="sm" variant="ghost" onClick={toggleMute} aria-pressed={muted}>
         {muted ? "Auto-read: off" : "Auto-read: on"}
       </Button>
       <label className="flex items-center gap-1 text-xs text-darkslate-600">
         Speed
         <select
           value={speed}
-          disabled={!supported}
           onChange={(e) => changeSpeed(parseFloat(e.target.value))}
           className="min-h-[36px] rounded-lg border border-sage-400 bg-white px-2 text-sm text-darkslate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600"
         >
           {SPEEDS.map((s) => <option key={s} value={s}>{s}×</option>)}
         </select>
       </label>
-      {!supported && <p className="w-full text-xs text-darkslate-600">Your browser can’t read aloud, so the question is shown as text only.</p>}
       {hint && <p role="status" className="w-full text-xs font-semibold text-gold-800">{hint}</p>}
     </div>
   );

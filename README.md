@@ -14,7 +14,7 @@ Built with Next.js, TypeScript, Gemini (with Groq as a backup reviewer), Supabas
 - **Guest or account.** Guests keep history in their browser. Accounts (email + confirmation code, Google, GitHub) keep it across devices.
 - **Resilience:** if Gemini fails, Groq reviews the answer; if both fail, a clearly labelled "basic feedback" grader answers and offers a retry. Unfinished sessions can be resumed for 24 hours.
 - **Full-width layout and motion:** screens use the whole window, the track list docks on the left of Home, and answers and track groups open with smooth accordions. All animation switches off when your system asks for reduced motion.
-- **Interviewer voice** reads each question aloud (mute and speed saved), the app is **installable on a phone**, and screens work from 320px wide.
+- **Interviewer voice** reads each question aloud (mute and speed saved). It uses the browser's own voice, and when a browser has none (Brave or Chromium on Linux, for example) a server voice from Gemini takes over, fetching the next question ahead of time, the app is **installable on a phone**, and screens work from 320px wide.
 
 ## Run it locally
 
@@ -36,6 +36,7 @@ Everything is configured in `.env.local`, which is git-ignored. **Never commit i
 |---|---|---|
 | `GEMINI_API_KEY` | AI reviews and debriefs (required for real AI feedback) | [Google AI Studio](https://aistudio.google.com/apikey) |
 | `GEMINI_MODEL` | Optional; defaults to `gemini-flash-lite-latest` | |
+| `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOICE` | Optional: the server voice for browsers that cannot speak by themselves | |
 | `GROQ_API_KEY`, `GROQ_MODEL` | Backup reviewer and audio transcription (optional but recommended) | [Groq console](https://console.groq.com/keys) |
 | `AUTH_SECRET` | Signing sign-in sessions (required) | `openssl rand -base64 32` |
 | `AUTH_TRUST_HOST` | Set to `true` to run the production build locally (`npm run build && npm start`) or to self-host; Vercel needs nothing. Without it, Auth.js refuses requests in production mode. | |

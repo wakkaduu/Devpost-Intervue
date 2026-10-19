@@ -13,6 +13,7 @@ export const LIMITS = {
   review: { max: 30, windowMs: 60_000 }, // each review costs an AI call
   debrief: { max: 10, windowMs: 60_000 },
   transcribe: { max: 10, windowMs: 60_000 },
+  speak: { max: 40, windowMs: 60_000 }, // a Listen press, plus a few questions fetched ahead
   history: { max: 60, windowMs: 60_000 },
   register: { max: 8, windowMs: 60 * 60_000 },
   confirmEmail: { max: 10, windowMs: 60_000 },

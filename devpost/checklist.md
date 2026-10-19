@@ -166,6 +166,7 @@ Build mode: learn
 - [x] Login page fits on one screen on laptops and desktops with no scrolling, and switching between Sign in and Create account moves nothing (learner request during final review)
 - [x] Voice recording no longer feels laggy: both recorders show "Starting microphone…" at once and only say "Listening/Recording" when the microphone is really live, and words spoken just before Stop are kept (learner report during final review)
 - [x] Voice recording is one continuous action: when live captions are unavailable, the same Start press records audio and transcribes it on Stop, instead of swapping in a second "Record audio" button (learner report during final review)
+- [x] "Couldn't read the question aloud" fixed: browsers with no working voice (Brave on Linux) now use a server voice from Gemini, fetched ahead of time and cached, restricted to our own questions (learner report during final review)
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

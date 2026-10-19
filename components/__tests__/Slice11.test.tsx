@@ -8,10 +8,10 @@ import { MUTED_KEY, SPEED_KEY } from "@/lib/speech-synthesis";
 
 // ── fake text-to-speech ──
 let utterances: any[];
-let synth: { speak: ReturnType<typeof vi.fn>; cancel: ReturnType<typeof vi.fn>; getVoices: () => any[] };
+let synth: { speak: ReturnType<typeof vi.fn>; cancel: ReturnType<typeof vi.fn>; getVoices: () => any[]; addEventListener: ReturnType<typeof vi.fn>; removeEventListener: ReturnType<typeof vi.fn> };
 function installSynth() {
   utterances = [];
-  synth = { speak: vi.fn((u) => utterances.push(u)), cancel: vi.fn(), getVoices: () => [] };
+  synth = { speak: vi.fn((u) => utterances.push(u)), cancel: vi.fn(), getVoices: () => [{ name: "Test Voice", lang: "en-US", default: true }], addEventListener: vi.fn(), removeEventListener: vi.fn() };
   vi.stubGlobal("SpeechSynthesisUtterance", class { text: string; rate = 1; lang = ""; onstart: any; onend: any; onerror: any; constructor(t: string) { this.text = t; } });
   Object.defineProperty(window, "speechSynthesis", { configurable: true, value: synth });
 }
@@ -86,10 +86,69 @@ describe("InterviewerVoiceControls", () => {
     expect(await screen.findByText(/Press Listen/)).toBeInTheDocument();
   });
 
-  it("when the browser can't speak, disables the controls and says so", async () => {
-    render(<InterviewerVoiceControls text="Hello there" />);
-    expect(await screen.findByText(/can’t read aloud/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Listen/ })).toBeDisabled();
+});
+
+describe("InterviewerVoiceControls in a browser with no voice (Brave on Linux)", () => {
+  class FakeAudio {
+    static instances: FakeAudio[] = [];
+    playbackRate = 1; onplaying: any; onended: any; onerror: any;
+    constructor(public src: string) { FakeAudio.instances.push(this); }
+    async play() { setTimeout(() => this.onplaying?.(), 0); }
+    pause() {}
+  }
+  let fetchMock: ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    FakeAudio.instances = [];
+    // the browser has the speech API but no voices behind it, and speaking fails
+    Object.defineProperty(window, "speechSynthesis", { configurable: true, writable: true, value: { speak: vi.fn(), cancel: vi.fn(), getVoices: () => [], addEventListener: vi.fn(), removeEventListener: vi.fn() } });
+    fetchMock = vi.fn(async () => ({ ok: true, status: 200, blob: async () => new Blob(["RIFF"]) }));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("Audio", FakeAudio);
+    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: () => "blob:fake" }));
+    window.localStorage.setItem(MUTED_KEY, "true"); // no auto-read, so each step below is the person's own click
+  });
+
+  it("Listen speaks the question from the server instead of showing an error", async () => {
+    render(<InterviewerVoiceControls text="Tell me about a conflict you resolved." />);
+    await userEvent.click(await screen.findByRole("button", { name: /Listen/ }));
+    await waitFor(() => expect(FakeAudio.instances).toHaveLength(1));
+    expect(JSON.parse((fetchMock.mock.calls[0] as any)[1].body).text).toBe("Tell me about a conflict you resolved.");
+    expect(screen.queryByText(/Couldn.t read the question aloud/)).toBeNull();
+    expect(await screen.findByRole("button", { name: /Stop/ })).toBeInTheDocument();
+  });
+
+  it("shows 'Preparing voice…' while the audio is on its way, and Stop cancels it", async () => {
+    let release!: () => void;
+    fetchMock.mockImplementationOnce(() => new Promise((r) => { release = () => r({ ok: true, status: 200, blob: async () => new Blob(["RIFF"]) }); }));
+    render(<InterviewerVoiceControls text="Describe a deadline." />);
+    await userEvent.click(await screen.findByRole("button", { name: /Listen/ }));
+    expect(await screen.findByRole("button", { name: /Preparing voice/ })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /Preparing voice/ }));
+    expect(await screen.findByRole("button", { name: /Listen/ })).toBeInTheDocument();
+    release();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(FakeAudio.instances).toHaveLength(0); // cancelled before it could play
+  });
+
+  it("uses the chosen speed", async () => {
+    window.localStorage.setItem(SPEED_KEY, "1.5");
+    render(<InterviewerVoiceControls text="Explain a failure." />);
+    await userEvent.click(await screen.findByRole("button", { name: /Listen/ }));
+    await waitFor(() => expect(FakeAudio.instances).toHaveLength(1));
+    expect(FakeAudio.instances[0].playbackRate).toBe(1.5);
+  });
+
+  it("fetches the next question ahead of time, so reading it aloud later is instant", async () => {
+    window.localStorage.removeItem(MUTED_KEY);
+    render(<InterviewerVoiceControls text="First question here." upcoming="Second question here." />);
+    await waitFor(() => expect(fetchMock.mock.calls.map((c: any) => JSON.parse(c[1].body).text)).toContain("Second question here."));
+  });
+
+  it("says so, kindly, if even the server's voice fails", async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 502 });
+    render(<InterviewerVoiceControls text="Another failure question." />);
+    await userEvent.click(await screen.findByRole("button", { name: /Listen/ }));
+    expect(await screen.findByText(/Couldn’t read the question aloud. You can still read it on screen/)).toBeInTheDocument();
   });
 });
 

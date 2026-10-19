@@ -7,7 +7,7 @@ import { useSpeechRecognition, joinTranscript, MAX_RECORDING_MS } from "@/hooks/
 import AudioMeter from "@/components/AudioMeter";
 import LiveDeliveryHUD from "@/components/LiveDeliveryHUD";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { stopSpeaking } from "@/lib/speech-synthesis";
+import { stopAllSpeech } from "@/lib/interviewer-voice";
 import { formatDuration } from "@/lib/session-logic";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 
@@ -108,7 +108,7 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
   }
 
   async function press() {
-    stopSpeaking(); // the interviewer stops talking when you start
+    stopAllSpeech(); // the interviewer stops talking when you start
     setAudioError(null);
     if (finishing || recorder.isStarting || switching) return; // still working on the last step
     if (speech.isStarting || speech.isListening) {

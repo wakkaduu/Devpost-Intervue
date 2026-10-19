@@ -112,3 +112,41 @@ export function speak(text: string, rate: number, handlers: SpeakHandlers = {}):
     return false;
   }
 }
+
+// ── Is the browser's own voice usable at all? ───────────────────────────────────
+// Some browsers have the API but no voices behind it (Brave, or Chromium on Linux without speech-dispatcher voices):
+// speaking fails with "synthesis-failed". We remember that for the session and use the server's voice instead.
+
+const BROKEN_KEY = "intervue_browser_voice_broken";
+
+export function browserVoiceKnownBroken(): boolean {
+  try {
+    return window.sessionStorage.getItem(BROKEN_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function markBrowserVoiceBroken(): void {
+  try {
+    window.sessionStorage.setItem(BROKEN_KEY, "true");
+  } catch {
+    // ignore
+  }
+}
+
+/** True if the browser can speak and has at least one voice. Some browsers list their voices a moment after loading, so wait briefly. */
+export async function browserVoiceUsable(waitMs = 400): Promise<boolean> {
+  if (!isSpeechSynthesisSupported() || browserVoiceKnownBroken()) return false;
+  const synth = window.speechSynthesis;
+  if (synth.getVoices().length > 0) return true;
+  return new Promise((resolve) => {
+    const done = () => {
+      synth.removeEventListener?.("voiceschanged", done);
+      clearTimeout(timer);
+      resolve(synth.getVoices().length > 0);
+    };
+    const timer = setTimeout(done, waitMs);
+    synth.addEventListener?.("voiceschanged", done);
+  });
+}
