@@ -119,7 +119,7 @@ Build mode: learn
   Learner check: In Chrome, hear a question read aloud, run the mic check, and watch the HUD while you speak.
   Commit: `Add interviewer voice, mic check and live HUD`
 
-- [ ] **12. Autosave and resume**
+- [x] **12. Autosave and resume**
   Becomes usable: Refreshing mid-session offers to resume for up to 24 hours; an empty draft never replaces a real one.
   Why now: Self-contained browser feature that touches the session hook, so it goes in after the session behavior is stable.
   PRD ref: `prd.md > Autosave and resume`, `prd.md > States and Boundaries`

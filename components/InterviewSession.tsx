@@ -3,16 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
+import ResumePrompt from "@/components/ResumePrompt";
 import VoiceSetup from "@/components/VoiceSetup";
 import VoiceAnswer from "@/components/VoiceAnswer";
 import QuestionDisplay from "@/components/QuestionDisplay";
 import { useSession } from "@/context/SessionContext";
 import { formatDuration } from "@/lib/session-logic";
 import type { PracticeMode } from "@/lib/mode-storage";
+import { clearDraft, loadDraft, saveDraft, type SessionDraft } from "@/lib/session-draft";
 
 export default function InterviewSession({ category, mode }: { category: string; mode: PracticeMode }) {
   const router = useRouter();
-  const { session, begin, submit, finish } = useSession();
+  const { session, begin, submit, finish, hasActive, restore } = useSession();
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -20,21 +22,97 @@ export default function InterviewSession({ category, mode }: { category: string;
   const [recording, setRecording] = useState(false);
   const [begun, setBegun] = useState(false);
 
-  useEffect(() => begin(category, mode), [begin, category, mode]);
+  // On arrival: carry on with a session already running in this tab; otherwise offer to resume a saved
+  // draft from the last 24 hours; otherwise start fresh.
+  const [gate, setGate] = useState<"checking" | "prompt" | "ready">("checking");
+  const [draft, setDraft] = useState<SessionDraft | null>(null);
+  const restoredCurrent = useRef<{ position: number; answer: string; elapsedSec: number; spokenSeconds: number } | null>(null);
+
+  useEffect(() => {
+    if (hasActive()) {
+      begin(category, mode);
+      setGate("ready");
+      return;
+    }
+    const saved = loadDraft();
+    if (saved) {
+      setDraft(saved);
+      setGate("prompt");
+    } else {
+      begin(category, mode);
+      setGate("ready");
+    }
+  }, [begin, hasActive, category, mode]);
+
+  function resumeDraft() {
+    if (!draft) return;
+    restoredCurrent.current = { position: draft.session.entries.length, ...draft.current };
+    setBegun(true); // already past the voice setup screen
+    restore(draft.session);
+    setGate("ready");
+    if (draft.session.category !== category) {
+      // The saved session is for another track: show that track's page.
+      const params = new URLSearchParams({ category: draft.session.category, mode: draft.session.mode });
+      router.replace(`/interview?${params.toString()}`);
+    }
+  }
+
+  function startNew() {
+    clearDraft();
+    begin(category, mode);
+    setGate("ready");
+  }
 
   const position = session ? session.entries.length : 0;
   // Voice mode starts with a short setup screen, shown once before the first question.
-  const needsSetup = mode === "mic" && !begun && position === 0;
+  const activeMode = session?.mode ?? mode; // a resumed session keeps the mode it was started in
+  const needsSetup = activeMode === "mic" && !begun && position === 0;
   const started = !needsSetup;
   const question = session && !session.finished ? session.questions[position] : undefined;
 
   // A new question gets a fresh timer and an empty answer box.
   useEffect(() => {
-    setElapsed(0);
-    setSpokenSeconds(0);
-    setAnswer("");
+    const restored = restoredCurrent.current;
+    if (restored && restored.position === position) {
+      // First render after resuming: bring back the half-written answer and the clock.
+      restoredCurrent.current = null;
+      setElapsed(restored.elapsedSec);
+      setSpokenSeconds(restored.spokenSeconds);
+      setAnswer(restored.answer);
+    } else {
+      setElapsed(0);
+      setSpokenSeconds(0);
+      setAnswer("");
+    }
     setError(null);
   }, [position]);
+
+  // Autosave shortly after anything changes. An empty session is never saved over a real draft (see saveDraft).
+  const latest = useRef({ elapsed: 0, spokenSeconds: 0 });
+  latest.current = { elapsed, spokenSeconds };
+  useEffect(() => {
+    if (!session || session.finished || gate !== "ready") return;
+    const id = setTimeout(() => {
+      saveDraft(session, { answer, elapsedSec: latest.current.elapsed, spokenSeconds: latest.current.spokenSeconds });
+    }, 500);
+    return () => clearTimeout(id);
+  }, [session, answer, gate]);
+
+  // Also save the moment the tab is hidden or closed, so the last few seconds of typing survive a refresh.
+  useEffect(() => {
+    const flush = () => {
+      if (session && !session.finished && gate === "ready") {
+        saveDraft(session, { answer, elapsedSec: latest.current.elapsed, spokenSeconds: latest.current.spokenSeconds });
+      }
+    };
+    const onVisibility = () => document.visibilityState === "hidden" && flush();
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [session, answer, gate]);
 
   useEffect(() => {
     if (!question || !started) return;
@@ -48,8 +126,15 @@ export default function InterviewSession({ category, mode }: { category: string;
   useEffect(() => {
     if (!session || session.category !== category) return;
     if (!session.finished) sawActive.current = true;
-    else if (sawActive.current) router.push("/summary");
+    else if (sawActive.current) {
+      clearDraft(); // the session is complete, so there is nothing left to resume
+      router.push("/summary");
+    }
   }, [session, category, router]);
+
+  if (gate === "prompt" && draft) {
+    return <ResumePrompt draft={draft} requestedTrack={category} onResume={resumeDraft} onStartNew={startNew} />;
+  }
 
   if (!session || !question) {
     return <p className="text-forest-100" role="status">Loading your questions…</p>;
@@ -86,7 +171,7 @@ export default function InterviewSession({ category, mode }: { category: string;
         <QuestionDisplay question={question} position={position + 1} total={session.questions.length} paused={recording} />
       </div>
 
-      {mode === "mic" ? (
+      {activeMode === "mic" ? (
         <VoiceAnswer key={position} value={answer} onChange={changeAnswer} onSpokenSeconds={setSpokenSeconds} onRecordingChange={setRecording} />
       ) : (
         <>

@@ -7,7 +7,8 @@ import { loadGuestSessions } from "@/lib/guest-storage";
 import { SessionProvider } from "@/context/SessionContext";
 
 const push = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+const replace = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
 const authState = vi.hoisted(() => ({ status: "unauthenticated" as "loading" | "authenticated" | "unauthenticated" }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ status: authState.status, data: null }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, ...p }: any) => <a href={href} {...p}>{children}</a> }));

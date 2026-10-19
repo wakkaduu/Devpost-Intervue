@@ -5,6 +5,7 @@ import type { Debrief, Feedback, Question, SessionEntry } from "@/types";
 import { MIN_DEBRIEF_ENTRIES } from "@/lib/debrief";
 import type { PracticeMode } from "@/lib/mode-storage";
 import { pickQuestions } from "@/lib/session-logic";
+import type { DraftSession } from "@/lib/session-draft";
 import { analyzeDelivery } from "@/lib/speech-metrics";
 
 export interface SessionState {
@@ -24,6 +25,10 @@ export interface SessionState {
 
 interface SessionApi {
   session: SessionState | null;
+  /** True while a session is in progress in this tab. */
+  hasActive: () => boolean;
+  /** Continues a session loaded from the autosaved draft. Reviews that were still running are started again. */
+  restore: (draft: DraftSession) => void;
   /** Starts a session, or keeps the one in progress for the same track. */
   begin: (category: string, mode: PracticeMode) => void;
   /** Submits the current answer and starts its review in the background. Returns false if the answer is empty. */
@@ -121,6 +126,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [update]);
 
+  const hasActive = useCallback(() => !!ref.current && !ref.current.finished, []);
+
+  const restore = useCallback(
+    (draft: DraftSession) => {
+      update({ ...draft, finished: false });
+      // Reviews that were in flight when the page closed never finished: ask for them again.
+      draft.entries.forEach((e, i) => {
+        if (e.status === "loading") void runReview(i);
+      });
+    },
+    [update, runReview]
+  );
+
   const begin = useCallback(
     (category: string, mode: PracticeMode) => {
       const cur = ref.current;
@@ -174,7 +192,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const retry = useCallback((index: number) => void runReview(index), [runReview]);
 
   return (
-    <SessionContext.Provider value={{ session, begin, submit: addEntry, finish, retry, requestDebrief }}>
+    <SessionContext.Provider value={{ session, hasActive, restore, begin, submit: addEntry, finish, retry, requestDebrief }}>
       {children}
     </SessionContext.Provider>
   );
