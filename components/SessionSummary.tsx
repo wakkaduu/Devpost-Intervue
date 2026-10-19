@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import DeliveryPanel from "@/components/DeliveryPanel";
 import FeedbackPanel from "@/components/FeedbackPanel";
@@ -12,9 +12,20 @@ import { splitTrackName } from "@/lib/questions";
 import { MIN_DEBRIEF_ENTRIES } from "@/lib/debrief";
 import { averageScore, formatDuration } from "@/lib/session-logic";
 import { scoreVerdict } from "@/lib/score-verdict";
+import { buildSavedSession, saveSession, type SaveResult } from "@/lib/session-save";
 
 export default function SessionSummary() {
   const { session, retry, requestDebrief } = useSession();
+
+  const [saveResult, setSaveResult] = useState<SaveResult | null>(null);
+
+  // Save once every review has settled. Saving is an upsert by session id, so a retried review
+  // updates the same history point instead of adding another.
+  const record = session ? buildSavedSession(session) : null;
+  const recordKey = record ? `${record.id}:${record.averageScore}:${record.questionCount}` : null;
+  useEffect(() => {
+    if (record) setSaveResult(saveSession(record));
+  }, [recordKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const reviewedCount = session?.entries.filter((e) => e.status === "done").length ?? 0;
   const anyLoading = session?.entries.some((e) => e.status === "loading") ?? false;
@@ -71,6 +82,15 @@ export default function SessionSummary() {
               {failed > 0 && <p className="mt-1 text-sm font-semibold text-red-700">{failed} {failed === 1 ? "review" : "reviews"} failed and {failed === 1 ? "isn’t" : "aren’t"} in the average. Retry below.</p>}
             </div>
           </div>
+        )}
+        {saveResult && (
+          saveResult.ok ? (
+            <p role="status" className="mt-4 text-sm text-darkslate-600">
+              Saved to your history. <Link href="/history" className="font-semibold text-forest-700 underline">See your progress</Link>
+            </p>
+          ) : (
+            <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{saveResult.error}</p>
+          )
         )}
         <div className="mt-5">
           <Link href="/" className={buttonClasses({ size: "lg", fullWidth: true })}>Practice again</Link>

@@ -8,6 +8,10 @@ import { pickQuestions } from "@/lib/session-logic";
 import { analyzeDelivery } from "@/lib/speech-metrics";
 
 export interface SessionState {
+  /** Identifies this session so it is saved only once. */
+  id: string;
+  /** ISO 8601 UTC time the session began. */
+  startedAt: string;
   category: string;
   mode: PracticeMode;
   questions: Question[];
@@ -121,7 +125,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     (category: string, mode: PracticeMode) => {
       const cur = ref.current;
       if (cur && cur.category === category && !cur.finished) return;
-      update({ category, mode, questions: pickQuestions(category), entries: [], finished: false });
+      update({
+        id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        startedAt: new Date().toISOString(),
+        category,
+        mode,
+        questions: pickQuestions(category),
+        entries: [],
+        finished: false,
+      });
     },
     [update]
   );

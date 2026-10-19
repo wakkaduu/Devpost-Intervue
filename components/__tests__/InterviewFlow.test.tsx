@@ -3,6 +3,7 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import InterviewSession from "@/components/InterviewSession";
 import SessionSummary from "@/components/SessionSummary";
+import { loadGuestSessions } from "@/lib/guest-storage";
 import { SessionProvider } from "@/context/SessionContext";
 
 const push = vi.fn();
@@ -23,6 +24,7 @@ const DEBRIEF = {
 
 let fetchMock: ReturnType<typeof vi.fn<(url: string, init?: any) => Promise<any>>>;
 beforeEach(() => {
+  window.localStorage.clear();
   push.mockClear();
   let n = 0;
   fetchMock = vi.fn(async (url: string, _init?: any) =>
@@ -104,6 +106,31 @@ describe("interview session", () => {
     await userEvent.click(screen.getByRole("button", { name: "End early" }));
     await userEvent.click(await screen.findByRole("button", { name: "Retry debrief" }));
     expect(await screen.findByText("You never state the outcome")).toBeInTheDocument();
+  });
+
+  it("saves the finished session once, and updates (not duplicates) it when a review is retried", async () => {
+    fetchMock.mockImplementationOnce(async () => ({ ok: false, json: async () => ({ error: "boom" }) }));
+    setup();
+    await userEvent.type(await screen.findByLabelText("Your answer"), "first answer");
+    await userEvent.click(screen.getByRole("button", { name: "Next question" }));
+    await userEvent.type(await screen.findByLabelText("Your answer"), "second answer");
+    await userEvent.click(screen.getByRole("button", { name: "End early" }));
+    await screen.findByText("Saved to your history.", { exact: false });
+    let stored = loadGuestSessions();
+    expect(stored).toHaveLength(1);
+    expect(stored[0].questionCount).toBe(2);
+    await userEvent.click(screen.getByRole("button", { name: "Retry review" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Retry review" })).toBeNull());
+    await waitFor(() => expect(loadGuestSessions()[0].averageScore).not.toBe(stored[0].averageScore));
+    stored = loadGuestSessions();
+    expect(stored).toHaveLength(1);
+  });
+
+  it("does not save a session with no answers", async () => {
+    setup();
+    await userEvent.click(await screen.findByRole("button", { name: "End early" }));
+    await screen.findByText("No answers submitted");
+    expect(loadGuestSessions()).toEqual([]);
   });
 
   it("ending early with nothing typed shows no answers submitted", async () => {

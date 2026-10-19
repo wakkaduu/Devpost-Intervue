@@ -59,7 +59,7 @@ Build mode: learn
   Learner check: Finish a session and judge whether the debrief tells you what to fix first.
   Commit: `Add AI session debrief`
 
-- [ ] **6. Sessions are saved and the History chart works (guest mode)**
+- [x] **6. Sessions are saved and the History chart works (guest mode)**
   Becomes usable: Every completed session is saved in the browser; History shows a trend chart filterable by track, a table view, and "change since your first session"; duplicate saves create no extra point.
   Why now: Delivers the second half of the kernel (seeing improvement) before accounts add complexity.
   PRD ref: `prd.md > History and progress chart`, `prd.md > Accounts and saved history` (guests), `prd.md > States and Boundaries`

@@ -72,3 +72,15 @@ export interface Debrief {
   fixFirst: string;
   source?: "ai";
 }
+
+/** A completed session as stored for History. */
+export interface SavedSession {
+  id: string;
+  category: string;
+  mode: "mic" | "typed";
+  averageScore: number;
+  questionCount: number;
+  entries: { question: string; answer: string; durationSec: number; feedback?: Feedback }[];
+  /** ISO 8601 UTC timestamp. */
+  createdAt: string;
+}

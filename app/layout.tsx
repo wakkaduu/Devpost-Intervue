@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import AppHeader from "@/components/AppHeader";
 import CategorySidebar from "@/components/CategorySidebar";
 import { SessionProvider } from "@/context/SessionContext";
 import { SidebarProvider } from "@/context/SidebarContext";
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </a>
         <SidebarProvider>
           <SessionProvider>
+            <AppHeader />
             <main id="main-content" className="flex-1">
               {children}
             </main>
