@@ -7,7 +7,7 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { MODE_KEY } from "@/lib/mode-storage";
 
 const push = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }), usePathname: () => "/" }));
 
 function setup() {
   return render(

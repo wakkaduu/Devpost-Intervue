@@ -14,7 +14,13 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 export const metadata: Metadata = {
   applicationName: "Intervue",
   appleWebApp: { capable: true, title: "Intervue", statusBarStyle: "black-translucent" },
-  icons: { icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }], apple: "/apple-touch-icon.png" },
+  icons: {
+    icon: [
+      { url: "/intervue-logo.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   title: { default: "Intervue: Mock Interview Practice", template: "%s · Intervue" },
   description: "Practise interviews by voice or in writing and get specific AI coaching on every answer.",
 };

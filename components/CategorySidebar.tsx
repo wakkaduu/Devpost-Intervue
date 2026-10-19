@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import CategoryCard from "@/components/CategoryCard";
 import { IconButton } from "@/components/ui/Button";
 import { useSidebar } from "@/context/SidebarContext";
 import { filterTrackGroups } from "@/lib/questions";
 
-/** Slide-over track picker: 52 tracks grouped by field, searchable. */
+/** Track picker drawer on the left: 52 tracks grouped by field, searchable. Opened from the header or the start card. */
 export default function CategorySidebar() {
   const { pickerOpen, setPickerOpen, selectedTrack, selectTrack } = useSidebar();
+  const router = useRouter();
+  const pathname = usePathname();
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -19,6 +22,8 @@ export default function CategorySidebar() {
     // Keyboard users: move focus into the dialog, keep Tab inside it, and give focus back when it closes.
     const opener = document.activeElement as HTMLElement | null;
     searchRef.current?.focus();
+    const scrollBefore = document.body.style.overflow;
+    document.body.style.overflow = "hidden"; // the page behind shouldn't scroll while the drawer is open
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setPickerOpen(false);
@@ -40,6 +45,7 @@ export default function CategorySidebar() {
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = scrollBefore;
       opener?.focus?.();
     };
   }, [pickerOpen, setPickerOpen]);
@@ -50,14 +56,15 @@ export default function CategorySidebar() {
   const count = groups.reduce((n, g) => n + g.tracks.length, 0);
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 bg-black/50" onClick={() => setPickerOpen(false)} aria-hidden="true" />
+    <div className="fixed inset-0 z-40 flex justify-start">
+      <div className="absolute inset-0 animate-fade-in bg-black/50 motion-reduce:animate-none" onClick={() => setPickerOpen(false)} aria-hidden="true" />
       <div
         ref={panelRef}
+        id="track-picker"
         role="dialog"
         aria-modal="true"
         aria-label="Choose a track"
-        className="relative flex h-full w-full max-w-md flex-col bg-sage-100 shadow-xl"
+        className="relative flex h-full w-full max-w-sm animate-slide-in-left flex-col bg-sage-100 shadow-xl motion-reduce:animate-none"
       >
         <div className="flex items-center justify-between gap-2 border-b border-sage-300 p-4">
           <h2 className="text-lg font-bold text-darkslate-900">Choose a track</h2>
@@ -94,6 +101,8 @@ export default function CategorySidebar() {
                       selectTrack(name);
                       setPickerOpen(false);
                       setQuery("");
+                      // The chosen track shows on Home, so take people there from other pages.
+                      if (pathname && pathname !== "/") router.push("/");
                     }}
                   />
                 ))}

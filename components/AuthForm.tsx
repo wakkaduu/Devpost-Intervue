@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import { validateRegistration, type FieldErrors } from "@/lib/auth-validation";
 import { safeCallbackPath } from "@/lib/safe-redirect";
 import ErrorMessage from "@/components/ui/ErrorMessage";
+import Logo from "@/components/Logo";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import PasswordInput from "@/components/ui/PasswordInput";
 
@@ -260,7 +261,10 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
       {oauthError && <ErrorMessage className="mt-4">{oauthError}</ErrorMessage>}
 
       <form onSubmit={submit} noValidate className="mt-2">
-        <h1 className="mt-3 text-xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+        <div className="mt-4 flex items-center gap-3">
+          <Logo size={40} />
+          <h1 className="text-xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+        </div>
         <p className="text-sm text-darkslate-600">Your account keeps your practice history across devices.</p>
 
         {mode === "signup" && (

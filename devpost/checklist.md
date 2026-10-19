@@ -156,6 +156,8 @@ Build mode: learn
 
 ## Final Review
 
+- [x] Use `intervue-logo.svg` for every logo: header, login card, favicon, manifest, and the generated PWA/Apple icons (learner request during final review)
+- [x] Track picker moved to the left as a drawer that opens and closes from the header and the start card, with keyboard and screen-reader support (learner request during final review)
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

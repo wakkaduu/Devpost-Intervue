@@ -37,6 +37,7 @@ Everything is configured in `.env.local`, which is git-ignored. **Never commit i
 | `GEMINI_MODEL` | Optional; defaults to `gemini-flash-lite-latest` | |
 | `GROQ_API_KEY`, `GROQ_MODEL` | Backup reviewer and audio transcription (optional but recommended) | [Groq console](https://console.groq.com/keys) |
 | `AUTH_SECRET` | Signing sign-in sessions (required) | `openssl rand -base64 32` |
+| `AUTH_TRUST_HOST` | Set to `true` to run the production build locally (`npm run build && npm start`) or to self-host; Vercel needs nothing. Without it, Auth.js refuses requests in production mode. | |
 | `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Accounts and saved history | Supabase project → Project Settings → API (use the **service_role** key) |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | "Continue with GitHub" (optional) | GitHub → Settings → Developer settings → OAuth Apps |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | "Continue with Google" (optional) | Google Cloud console → Credentials |

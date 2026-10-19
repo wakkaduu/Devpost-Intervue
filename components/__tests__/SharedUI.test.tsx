@@ -10,6 +10,8 @@ import CategorySidebar from "@/components/CategorySidebar";
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 import manifest from "@/app/manifest";
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePathname: () => "/" }));
+
 describe("ErrorMessage", () => {
   it("announces errors immediately and warnings politely", () => {
     const { rerender } = render(<ErrorMessage>Bad thing</ErrorMessage>);
@@ -103,6 +105,9 @@ describe("web app manifest (installability)", () => {
   });
   it("includes a maskable icon, so phones don't squash the logo into a circle", () => {
     expect((m.icons ?? []).some((i) => i.purpose === "maskable")).toBe(true);
+  });
+  it("includes the Intervue logo SVG", () => {
+    expect((m.icons ?? []).some((i) => i.src === "/intervue-logo.svg" && i.type === "image/svg+xml")).toBe(true);
   });
   it("points only at icons that exist", async () => {
     const fs = await import("node:fs");

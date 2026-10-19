@@ -8,6 +8,14 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      keyframes: {
+        "slide-in-left": { from: { transform: "translateX(-100%)" }, to: { transform: "translateX(0)" } },
+        "fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+      },
+      animation: {
+        "slide-in-left": "slide-in-left 200ms ease-out",
+        "fade-in": "fade-in 200ms ease-out",
+      },
       fontFamily: { sans: ["var(--font-inter)", "system-ui", "sans-serif"] },
       colors: {
         background: "var(--background)",
