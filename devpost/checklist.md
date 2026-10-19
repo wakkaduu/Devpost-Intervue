@@ -9,7 +9,7 @@ Build mode: learn
 
 ## Slices
 
-- [ ] **1. You can answer one question in writing and get a specific AI review**
+- [x] **1. You can answer one question in writing and get a specific AI review**
   Becomes usable: A running app where you type an answer to an interview question and get back a score, what to work on first, a stronger version, a follow-up question, and the interviewer's take, written by Gemini about what you actually said.
   Why now: This is the Unique Kernel and the riskiest unknown (model names, key handling, structured output). It also carries the scaffold, so everything later lands on a working base.
   PRD ref: `prd.md > AI review and follow-up`, `prd.md > Answering in writing`, `prd.md > Look and Feel`
@@ -19,7 +19,7 @@ Build mode: learn
   Learner check: Open http://localhost:3000, type an answer, and say whether the review feels specific to what you wrote and looks the way you pictured.
   Commit: `Scaffold app and add AI review of a written answer`
 
-- [ ] **2. Home with 52 tracks and a remembered mode**
+- [x] **2. Home with 52 tracks and a remembered mode**
   Becomes usable: A Home page with the start card, searchable grouped track picker, Voice/Written toggle that remembers your last choice, and an inline error if no track is chosen.
   Why now: Entry point of the Core Journey; the session needs a chosen track and mode before it can grow beyond one question.
   PRD ref: `prd.md > Track and mode selection`, `prd.md > Screens and Layout`

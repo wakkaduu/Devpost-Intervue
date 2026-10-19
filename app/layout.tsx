@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import CategorySidebar from "@/components/CategorySidebar";
+import { SidebarProvider } from "@/context/SidebarContext";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -21,9 +23,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         >
           Skip to main content
         </a>
-        <main id="main-content" className="flex-1">
-          {children}
-        </main>
+        <SidebarProvider>
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
+          <CategorySidebar />
+        </SidebarProvider>
       </body>
     </html>
   );
