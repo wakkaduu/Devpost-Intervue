@@ -37,7 +37,13 @@ export async function sendConfirmationEmail(input: { to: string; name: string; c
     });
     if (!res.ok) {
       // Log Resend's reason for us; never show provider details to the user.
-      console.error(`[email] Resend rejected the message (${res.status}):`, await res.text());
+      const reason = await res.text();
+      console.error(`[email] Resend rejected the message (${res.status}):`, reason);
+      if (process.env.NODE_ENV !== "production" && res.status === 403 && /testing emails|verify a domain/i.test(reason)) {
+        // Resend's free sender only delivers to the account owner's own address. While developing, print the code
+        // here so sign-up can still be tested with any email. This never happens in production.
+        console.warn(`[email] DEV ONLY: Resend's test sender can't deliver to ${input.to}. Confirmation code: ${input.code}. To email real users, verify a domain at resend.com/domains.`);
+      }
       return { ok: false, error: "The email could not be sent." };
     }
     return { ok: true };

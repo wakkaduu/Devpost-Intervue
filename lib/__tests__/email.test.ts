@@ -46,6 +46,26 @@ describe("sendConfirmationEmail", () => {
     expect(JSON.stringify(r)).not.toContain("secret-detail");
   });
 
+  it("in development, prints the code to the server log when Resend's test sender refuses the recipient", async () => {
+    process.env.RESEND_API_KEY = "re_test";
+    (process.env as Record<string, string>).NODE_ENV = "development";
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 403, text: async () => "You can only send testing emails to your own email address. Please verify a domain" })));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const r = await sendConfirmationEmail({ to: "other@example.com", name: "Sam", code: "654321" });
+    expect(r.ok).toBe(false); // the person is still told the email could not be sent
+    expect(warn.mock.calls.flat().join(" ")).toContain("654321");
+  });
+
+  it("never prints the code in production", async () => {
+    process.env.RESEND_API_KEY = "re_test";
+    (process.env as Record<string, string>).NODE_ENV = "production";
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 403, text: async () => "You can only send testing emails to your own email address. Please verify a domain" })));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    await sendConfirmationEmail({ to: "other@example.com", name: "Sam", code: "654321" });
+    expect([...warn.mock.calls, ...log.mock.calls].flat().join(" ")).not.toContain("654321");
+  });
+
   it("returns a failure when the network is down", async () => {
     process.env.RESEND_API_KEY = "re_test";
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
