@@ -3,10 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getUserSessions, saveUserSession } from "@/lib/db";
 import { validateHistoryPayload } from "@/lib/history-validation";
+import { rateLimit } from "@/lib/http";
 
 const MAX_BODY_BYTES = 1_000_000;
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const limited = rateLimit(request, "history");
+  if (limited) return limited;
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Sign in to see your history." }, { status: 401 });
   try {
@@ -18,6 +21,9 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const limited = rateLimit(request, "history");
+  if (limited) return limited;
+
   const session = await auth();
   if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: "Sign in to save your history." }, { status: 401 });

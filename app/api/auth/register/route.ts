@@ -3,16 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateRegistration } from "@/lib/auth-validation";
 import { createUser, EmailTakenError } from "@/lib/db";
 import { issueConfirmationCode } from "@/lib/confirm-email";
+import { jsonError, rateLimit, readJson } from "@/lib/http";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
-  }
+  const limited = rateLimit(request, "register");
+  if (limited) return limited;
 
-  const result = validateRegistration(body);
+  const parsed = await readJson(request, 10_000);
+  if (!parsed.ok) return parsed.response;
+
+  const result = validateRegistration(parsed.body);
   if (!result.ok) {
     return NextResponse.json({ error: "Please fix the highlighted fields.", fields: result.errors }, { status: 400 });
   }

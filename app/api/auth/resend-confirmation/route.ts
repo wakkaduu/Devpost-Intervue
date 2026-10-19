@@ -2,14 +2,15 @@
 // Unknown or already-verified emails get the same answer as a real send.
 import { NextRequest, NextResponse } from "next/server";
 import { issueConfirmationCode } from "@/lib/confirm-email";
+import { jsonError, rateLimit, readJson } from "@/lib/http";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
-  }
+  const limited = rateLimit(request, "resendConfirmation");
+  if (limited) return limited;
+
+  const parsed = await readJson(request, 10_000);
+  if (!parsed.ok) return parsed.response;
+  const body = (typeof parsed.body === "object" && parsed.body !== null ? parsed.body : {}) as Record<string, unknown>;
   const email = typeof body?.email === "string" ? body.email.trim() : "";
   if (!email) return NextResponse.json({ error: "Enter your email.", code: "VALIDATION_FAILED" }, { status: 400 });
 

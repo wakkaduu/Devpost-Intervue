@@ -129,7 +129,7 @@ Build mode: learn
   Learner check: Start a session, refresh, and resume where you left off.
   Commit: `Add autosave and resume`
 
-- [ ] **13. Rate limiting, input validation and safe errors**
+- [x] **13. Rate limiting, input validation and safe errors**
   Becomes usable: Abuse of auth and API routes is throttled; bad input gets clean errors; internal details never reach the user.
   Why now: Hardening needs all routes to exist.
   PRD ref: `prd.md > Rate limiting and input validation`

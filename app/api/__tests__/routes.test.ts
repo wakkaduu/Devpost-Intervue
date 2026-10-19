@@ -18,6 +18,7 @@ vi.mock("@/lib/db", () => ({
 }));
 
 import { NextRequest } from "next/server";
+import { limiter } from "@/lib/security/rate-limiter";
 import { POST as register } from "@/app/api/auth/register/route";
 import { GET as historyGet, POST as historyPost } from "@/app/api/history/route";
 import { EmailTakenError } from "@/lib/db";
@@ -33,6 +34,7 @@ const session = {
 };
 
 beforeEach(() => {
+  limiter.clear();
   vi.clearAllMocks();
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
@@ -78,7 +80,7 @@ describe("POST /api/auth/register", () => {
 describe("/api/history", () => {
   it("requires sign-in for both GET and POST (401)", async () => {
     mocks.auth.mockResolvedValue(null);
-    expect((await historyGet()).status).toBe(401);
+    expect((await historyGet(new NextRequest("http://localhost/api/history"))).status).toBe(401);
     expect((await historyPost(req({ session }))).status).toBe(401);
     expect(mocks.saveUserSession).not.toHaveBeenCalled();
   });
@@ -101,7 +103,7 @@ describe("/api/history", () => {
   it("returns the user's own sessions", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "u1", email: "sam@example.com" } });
     mocks.getUserSessions.mockResolvedValue([session]);
-    const res = await historyGet();
+    const res = await historyGet(new NextRequest("http://localhost/api/history"));
     expect(res.status).toBe(200);
     expect(mocks.getUserSessions).toHaveBeenCalledWith("u1");
     expect((await res.json()).sessions).toHaveLength(1);

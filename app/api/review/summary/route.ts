@@ -2,22 +2,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateDebriefRequest } from "@/lib/debrief";
 import { requestDebrief } from "@/lib/debrief-evaluator";
+import { jsonError, rateLimit, readJson } from "@/lib/http";
 
 export const maxDuration = 30;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
-  }
+  const limited = rateLimit(request, "debrief");
+  if (limited) return limited;
+
+  const parsed = await readJson(request, 500_000); // up to 12 answers of 8,000 characters
+  if (!parsed.ok) return parsed.response;
 
   let debriefRequest;
   try {
-    debriefRequest = validateDebriefRequest(body);
+    debriefRequest = validateDebriefRequest(parsed.body);
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Invalid request." }, { status: 400 });
+    return jsonError(400, err instanceof Error ? err.message : "Invalid request.", "VALIDATION_FAILED");
   }
 
   try {
@@ -26,6 +26,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ debrief: { ...debrief, source: "ai" } });
   } catch (err) {
     console.error("[debrief] all providers failed:", err);
-    return NextResponse.json({ error: "The debrief is unavailable right now. Please try again." }, { status: 502 });
+    return jsonError(502, "The debrief is unavailable right now. Please try again.");
   }
 }

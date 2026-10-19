@@ -4,12 +4,19 @@ import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { isEmailVerified, verifyUserCredentials } from "@/lib/db";
 import { availableProviders, resolveOAuthSignIn } from "@/lib/oauth";
+import { clientIp, loginLockedFor, recordLoginFailure, recordLoginSuccess } from "@/lib/security/rate-limiter";
+import { logSecurityEvent, maskEmail } from "@/lib/security/logger";
 
 const enabled = availableProviders();
 
 /** Right password, but the email hasn't been confirmed yet. The login form turns this into the "enter your code" step. */
 class EmailNotVerified extends CredentialsSignin {
   code = "email_not_verified";
+}
+
+/** Too many failed attempts from this address: the login form shows a "wait a few minutes" message. */
+class TooManyAttempts extends CredentialsSignin {
+  code = "rate_limited";
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -21,14 +28,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       id: "credentials",
       name: "Email and password",
       credentials: { email: {}, password: {} },
-      async authorize(credentials) {
-        const email = typeof credentials?.email === "string" ? credentials.email : "";
+      async authorize(credentials, request) {
+        const email = typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : "";
         const password = typeof credentials?.password === "string" ? credentials.password : "";
-        if (!email || !password) return null;
+        if (!email || !password || email.length > 254 || password.length > 1000) return null;
+
+        const ip = clientIp(request.headers);
+        // Locked out? Refuse before checking the password at all, so a lock can't be used to test guesses.
+        const wait = loginLockedFor(ip, email);
+        if (wait > 0) {
+          logSecurityEvent("LOGIN_LOCKED", { ip, account: maskEmail(email), retryAfterSeconds: wait });
+          throw new TooManyAttempts();
+        }
+
         try {
           const user = await verifyUserCredentials(email, password);
-          if (user && (await isEmailVerified(user.email)) === false) throw new EmailNotVerified();
-          return user ? { id: user.id, name: user.name, email: user.email, image: user.image } : null;
+          if (!user) {
+            recordLoginFailure(ip, email);
+            logSecurityEvent("LOGIN_FAILED", { ip, account: maskEmail(email) });
+            return null;
+          }
+          if ((await isEmailVerified(user.email)) === false) throw new EmailNotVerified();
+          recordLoginSuccess(ip, email);
+          return { id: user.id, name: user.name, email: user.email, image: user.image };
         } catch (err) {
           if (err instanceof EmailNotVerified) throw err;
           console.error("[auth] sign-in lookup failed:", err);

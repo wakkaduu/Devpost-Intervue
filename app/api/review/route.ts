@@ -3,28 +3,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateReviewRequest } from "@/lib/validation";
 import { evaluateAnswer } from "@/lib/evaluator";
+import { jsonError, rateLimit, readJson } from "@/lib/http";
 
 export const maxDuration = 30;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
-  }
+  const limited = rateLimit(request, "review");
+  if (limited) return limited;
+
+  const parsed = await readJson(request);
+  if (!parsed.ok) return parsed.response;
 
   let reviewRequest;
   try {
-    reviewRequest = validateReviewRequest(body);
+    reviewRequest = validateReviewRequest(parsed.body);
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Invalid request." }, { status: 400 });
+    return jsonError(400, err instanceof Error ? err.message : "Invalid request.", "VALIDATION_FAILED");
   }
 
   try {
     return NextResponse.json({ feedback: await evaluateAnswer(reviewRequest) });
   } catch (err) {
     console.error("[review] unexpected failure:", err);
-    return NextResponse.json({ error: "Review service unavailable. Please try again." }, { status: 500 });
+    return jsonError(500, "Review service unavailable. Please try again.");
   }
 }

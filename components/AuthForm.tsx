@@ -63,6 +63,10 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
 
   async function logIn() {
     const res = await signIn("credentials", { email, password, redirect: false });
+    if (res?.code === "rate_limited") {
+      setError("Too many sign-in attempts. Please wait a few minutes and try again.");
+      return false;
+    }
     if (res?.code === "email_not_verified") {
       setStep("confirm");
       setNotice("Confirm your email to finish signing in. We're sending you a new code.");
