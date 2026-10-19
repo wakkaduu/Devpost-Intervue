@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Button from "@/components/ui/Button";
@@ -25,7 +25,12 @@ function Field({ id, label, error, ...input }: { id: string; label: string; erro
   );
 }
 
-export default function AuthForm({ callbackUrl }: { callbackUrl?: string }) {
+const OAUTH_ERRORS: Record<string, string> = {
+  AccessDenied: "We couldn't sign you in with that account. Make sure its email address is verified with the provider, or use email and password.",
+  OAuthAccountNotLinked: "That email is already used by another sign-in method. Sign in the way you did before.",
+};
+
+export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: string; authError?: string }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signin");
   const [name, setName] = useState("");
@@ -34,6 +39,17 @@ export default function AuthForm({ callbackUrl }: { callbackUrl?: string }) {
   const [fields, setFields] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [providers, setProviders] = useState<{ google: boolean; github: boolean }>({ google: false, github: false });
+
+  // Show a social button only for providers the server has configured.
+  useEffect(() => {
+    fetch("/api/auth/providers-available")
+      .then((r) => r.json())
+      .then(setProviders)
+      .catch(() => {});
+  }, []);
+
+  const oauthError = authError ? (OAUTH_ERRORS[authError] ?? "Sign-in didn't work. Please try again.") : null;
 
   async function logIn() {
     const res = await signIn("credentials", { email, password, redirect: false });
@@ -108,6 +124,23 @@ export default function AuthForm({ callbackUrl }: { callbackUrl?: string }) {
           </button>
         ))}
       </div>
+
+      {(providers.google || providers.github) && (
+        <div className="mt-4 space-y-2">
+          {providers.google && (
+            <Button variant="secondary" size="lg" fullWidth onClick={() => signIn("google", { callbackUrl: safeCallbackPath(callbackUrl) })}>
+              Continue with Google
+            </Button>
+          )}
+          {providers.github && (
+            <Button variant="secondary" size="lg" fullWidth onClick={() => signIn("github", { callbackUrl: safeCallbackPath(callbackUrl) })}>
+              Continue with GitHub
+            </Button>
+          )}
+          <p className="pt-1 text-center text-xs text-darkslate-600">or use your email</p>
+        </div>
+      )}
+      {oauthError && <div role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{oauthError}</div>}
 
       <form onSubmit={submit} noValidate className="mt-2">
         <h1 className="mt-3 text-xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>

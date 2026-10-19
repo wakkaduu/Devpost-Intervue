@@ -33,7 +33,7 @@ export const normalizeEmail = (email: string) => email.trim().toLowerCase();
 export async function getUserByEmail(email: string) {
   const { data, error } = await db().from("users").select("*").eq("email", normalizeEmail(email)).maybeSingle();
   if (error) throw new DatabaseError(error.message);
-  return data as (UserRecord & { password_hash: string | null }) | null;
+  return data as (UserRecord & { password_hash: string | null; email_verified: boolean }) | null;
 }
 
 export async function createUser(input: { name: string; email: string; password: string }): Promise<UserRecord> {
@@ -104,4 +104,42 @@ export async function getUserSessions(userId: string): Promise<SavedSession[]> {
       createdAt: new Date(r.created_at as string).toISOString(),
     }))
     .reverse(); // oldest first, like the guest store
+}
+
+/**
+ * Finds or creates the account for someone who signed in with Google or GitHub, matched by email.
+ * The provider has verified the email, so an existing account with that email is linked. If that
+ * account was never email-verified, any password on it is cleared: whoever registered it first
+ * hasn't proven they own the address, but the person who just signed in with the provider has.
+ */
+export async function upsertOAuthUser(input: { email: string; name?: string | null; image?: string | null }): Promise<UserRecord> {
+  const email = normalizeEmail(input.email);
+  const existing = await getUserByEmail(email);
+  if (existing) {
+    if (!existing.email_verified) {
+      const { error } = await db()
+        .from("users")
+        .update({ email_verified: true, password_hash: null, confirmation_code_hash: null, confirmation_code_expires: null })
+        .eq("id", existing.id);
+      if (error) throw new DatabaseError(error.message);
+    }
+    return { id: existing.id, name: existing.name, email: existing.email, image: existing.image };
+  }
+  const row = {
+    id: crypto.randomUUID(),
+    name: (input.name?.trim() || email.split("@")[0]).slice(0, 80),
+    email,
+    image: input.image ?? null,
+    email_verified: true,
+  };
+  const { data, error } = await db().from("users").insert(row).select("id, name, email, image").single();
+  if (error) {
+    if (error.code === "23505") {
+      // Lost a race with a parallel sign-in for the same email: use the account that won.
+      const winner = await getUserByEmail(email);
+      if (winner) return { id: winner.id, name: winner.name, email: winner.email, image: winner.image };
+    }
+    throw new DatabaseError(error.message);
+  }
+  return data as UserRecord;
 }

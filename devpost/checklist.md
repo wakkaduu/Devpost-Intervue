@@ -79,7 +79,7 @@ Build mode: learn
   Learner check: Sign up, finish a session, sign out and back in, and confirm your history is still there.
   Commit: `Add accounts and Supabase-backed history`
 
-- [ ] **8. Sign in with Google and GitHub**
+- [x] **8. Sign in with Google and GitHub**
   Becomes usable: One-click sign-in with Google or GitHub that lands in the same history.
   Why now: Same auth system, adding providers one at a time; depends on external OAuth setup the learner controls.
   PRD ref: `prd.md > Email sign-up with confirmation` (Google/GitHub carry over)

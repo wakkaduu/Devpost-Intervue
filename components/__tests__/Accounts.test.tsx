@@ -57,7 +57,7 @@ describe("AuthForm", () => {
   });
 
   it("validates sign-up fields before sending anything", async () => {
-    const fetchMock = vi.fn();
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ google: false, github: false }) }));
     vi.stubGlobal("fetch", fetchMock);
     render(<AuthForm />);
     await userEvent.click(screen.getByRole("button", { name: "Create account", pressed: false }));
@@ -67,7 +67,7 @@ describe("AuthForm", () => {
     expect(await screen.findByText("Enter your name.")).toBeInTheDocument();
     expect(screen.getByText("Enter a valid email address.")).toBeInTheDocument();
     expect(screen.getByText(/at least 8 characters/)).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalledWith("/api/auth/register", expect.anything());
   });
 
   it("registers, then signs in", async () => {
@@ -93,6 +93,30 @@ describe("AuthForm", () => {
     await userEvent.keyboard("{Enter}");
     expect(await screen.findByText("This email is already registered.")).toBeInTheDocument();
     expect(h.signIn).not.toHaveBeenCalled();
+  });
+});
+
+describe("Social sign-in buttons", () => {
+  it("shows only the providers the server has configured, and starts that provider's sign-in", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ google: false, github: true }) })));
+    render(<AuthForm callbackUrl="/history" />);
+    const gh = await screen.findByRole("button", { name: "Continue with GitHub" });
+    expect(screen.queryByRole("button", { name: "Continue with Google" })).toBeNull();
+    await userEvent.click(gh);
+    expect(h.signIn).toHaveBeenCalledWith("github", { callbackUrl: "/history" });
+  });
+
+  it("shows no social buttons when none are configured", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ google: false, github: false }) })));
+    render(<AuthForm />);
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    expect(screen.queryByText(/Continue with/)).toBeNull();
+  });
+
+  it("explains a refused social sign-in", () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ google: false, github: false }) })));
+    render(<AuthForm authError="AccessDenied" />);
+    expect(screen.getByRole("alert")).toHaveTextContent(/verified with the provider/);
   });
 });
 
