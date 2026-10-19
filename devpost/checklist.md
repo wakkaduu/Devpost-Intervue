@@ -39,7 +39,7 @@ Build mode: learn
   Learner check: Do a short session, end one early, and check that the Results screen makes sense and feels encouraging.
   Commit: `Add multi-question session and Results page`
 
-- [ ] **4. Voice answers with live transcript and delivery feedback**
+- [x] **4. Voice answers with live transcript and delivery feedback**
   Becomes usable: Answer by speaking: live transcript, stop to finalize, words per minute with pace label, filler words, AI tone read, and a typed fallback if the mic is denied or unsupported.
   Why now: Voice is half of the core promise and carries browser-API risk, so it comes right after the written loop works.
   PRD ref: `prd.md > Answering by voice`, `prd.md > Delivery feedback`

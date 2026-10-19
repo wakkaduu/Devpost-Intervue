@@ -1,3 +1,5 @@
+import type { DeliveryMetrics } from "@/lib/speech-metrics";
+
 // Shared types
 
 export interface Question {
@@ -37,6 +39,10 @@ export interface SessionEntry {
   question: string;
   answer: string;
   durationSec: number;
+  /** True when the answer was spoken (voice mode and the mic was used). */
+  spoken?: boolean;
+  /** Words per minute, fillers and pace; computed in the browser for spoken answers. */
+  delivery?: DeliveryMetrics;
   /** loading: review in flight. done: feedback arrived. error: the review failed and can be retried. */
   status: "loading" | "done" | "error";
   feedback?: Feedback;

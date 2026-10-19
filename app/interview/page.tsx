@@ -27,9 +27,6 @@ export default async function InterviewPage({
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:py-12">
       <h1 className="text-2xl font-bold text-white">{splitTrackName(category).title}</h1>
-      {practiceMode === "mic" && (
-        <p className="mt-1 text-sm text-gold-300">Voice answers are coming in a later step. For now, type your answer.</p>
-      )}
       <div className="mt-4">
         <InterviewSession category={category} mode={practiceMode} />
       </div>

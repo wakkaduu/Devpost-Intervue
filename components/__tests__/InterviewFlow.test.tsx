@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import InterviewSession from "@/components/InterviewSession";
 import SessionSummary from "@/components/SessionSummary";
@@ -60,6 +60,30 @@ describe("interview session", () => {
     await userEvent.click(await screen.findByRole("button", { name: "End early" }));
     expect(await screen.findByText("No answers submitted")).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("spoken answers get delivery feedback and are reviewed as spoken", async () => {
+    class Rec {
+      static last: Rec;
+      onresult: any; onerror: any; onend: any;
+      start = vi.fn(); stop = vi.fn(); abort = vi.fn();
+      constructor() { Rec.last = this; }
+    }
+    (window as any).SpeechRecognition = Rec;
+    render(
+      <SessionProvider>
+        <InterviewSession category="Behavioral" mode="mic" />
+        <SessionSummary />
+      </SessionProvider>
+    );
+    await userEvent.click(await screen.findByRole("button", { name: /Start recording/ }));
+    act(() => Rec.last.onresult({ resultIndex: 0, results: [Object.assign([{ transcript: "um I led the project and like shipped it" }], { isFinal: true })] }));
+    await new Promise((r) => setTimeout(r, 1100)); // let one second of speaking time pass
+    await userEvent.click(screen.getByRole("button", { name: /Stop recording/ }));
+    await userEvent.click(screen.getByRole("button", { name: "End early" }));
+    expect(await screen.findByRole("region", { name: "Delivery feedback" })).toHaveTextContent("Filler words");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).mode).toBe("mic");
+    delete (window as any).SpeechRecognition;
   });
 
   it("offers a retry when a review fails", async () => {

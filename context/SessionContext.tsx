@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useRef, useState, type ReactNod
 import type { Feedback, Question, SessionEntry } from "@/types";
 import type { PracticeMode } from "@/lib/mode-storage";
 import { pickQuestions } from "@/lib/session-logic";
+import { analyzeDelivery } from "@/lib/speech-metrics";
 
 export interface SessionState {
   category: string;
@@ -19,9 +20,9 @@ interface SessionApi {
   /** Starts a session, or keeps the one in progress for the same track. */
   begin: (category: string, mode: PracticeMode) => void;
   /** Submits the current answer and starts its review in the background. Returns false if the answer is empty. */
-  submit: (answer: string, durationSec: number) => boolean;
+  submit: (answer: string, durationSec: number, spokenSeconds?: number) => boolean;
   /** Ends the session now. A non-empty draft for the current question is submitted first. */
-  finish: (draft?: { answer: string; durationSec: number }) => void;
+  finish: (draft?: { answer: string; durationSec: number; spokenSeconds?: number }) => void;
   retry: (index: number) => void;
 }
 
@@ -62,7 +63,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             question: entry.question,
             answer: entry.answer,
             category: cur.category,
-            mode: cur.mode === "mic" ? "typed" : cur.mode, // voice answers arrive in a later step
+            mode: entry.spoken ? "mic" : "typed",
             priorFocus,
           }),
         });
@@ -86,7 +87,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const addEntry = useCallback(
-    (answer: string, durationSec: number): boolean => {
+    (answer: string, durationSec: number, spokenSeconds = 0): boolean => {
       const cur = ref.current;
       const text = answer.trim();
       if (!cur || cur.finished || !text || cur.entries.length >= cur.questions.length) return false;
@@ -97,6 +98,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         durationSec: Math.round(durationSec),
         status: "loading",
       };
+      if (spokenSeconds > 0) {
+        entry.spoken = true;
+        entry.delivery = analyzeDelivery(text, spokenSeconds) ?? undefined;
+      }
       const entries = [...cur.entries, entry];
       update({ ...cur, entries, finished: entries.length === cur.questions.length });
       void runReview(index);
@@ -106,8 +111,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const finish = useCallback(
-    (draft?: { answer: string; durationSec: number }) => {
-      if (draft) addEntry(draft.answer, draft.durationSec);
+    (draft?: { answer: string; durationSec: number; spokenSeconds?: number }) => {
+      if (draft) addEntry(draft.answer, draft.durationSec, draft.spokenSeconds);
       const cur = ref.current;
       if (cur && !cur.finished) update({ ...cur, finished: true });
     },

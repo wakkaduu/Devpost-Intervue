@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import DeliveryPanel from "@/components/DeliveryPanel";
 import FeedbackPanel from "@/components/FeedbackPanel";
 import ScoreRing from "@/components/ScoreRing";
 import Button, { buttonClasses } from "@/components/ui/Button";
@@ -65,6 +66,7 @@ export default function SessionSummary() {
               <h2 className="text-sm font-bold uppercase tracking-wide text-forest-700">Your answer · {formatDuration(entry.durationSec)}</h2>
               <p className="mt-1 whitespace-pre-wrap text-sm">{entry.answer}</p>
             </div>
+            {entry.delivery && <DeliveryPanel delivery={entry.delivery} transcript={entry.answer} />}
             {entry.status === "loading" && <p role="status" className="text-sm font-semibold text-darkslate-600">Reviewing this answer…</p>}
             {entry.status === "error" && (
               <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">

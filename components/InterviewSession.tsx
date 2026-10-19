@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
+import VoiceAnswer from "@/components/VoiceAnswer";
 import QuestionDisplay from "@/components/QuestionDisplay";
 import { useSession } from "@/context/SessionContext";
 import { formatDuration } from "@/lib/session-logic";
@@ -14,6 +15,7 @@ export default function InterviewSession({ category, mode }: { category: string;
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [spokenSeconds, setSpokenSeconds] = useState(0);
 
   useEffect(() => begin(category, mode), [begin, category, mode]);
 
@@ -23,6 +25,7 @@ export default function InterviewSession({ category, mode }: { category: string;
   // A new question gets a fresh timer and an empty answer box.
   useEffect(() => {
     setElapsed(0);
+    setSpokenSeconds(0);
     setAnswer("");
     setError(null);
   }, [position]);
@@ -48,12 +51,17 @@ export default function InterviewSession({ category, mode }: { category: string;
 
   const isLast = position === session.questions.length - 1;
 
+  function changeAnswer(text: string) {
+    setAnswer(text);
+    if (error) setError(null);
+  }
+
   function next() {
-    if (!submit(answer, elapsed)) setError("Write an answer before you continue.");
+    if (!submit(answer, elapsed, spokenSeconds)) setError("Write an answer before you continue.");
   }
 
   function endEarly() {
-    finish(answer.trim() ? { answer, durationSec: elapsed } : undefined);
+    finish(answer.trim() ? { answer, durationSec: elapsed, spokenSeconds } : undefined);
   }
 
   return (
@@ -70,18 +78,21 @@ export default function InterviewSession({ category, mode }: { category: string;
         <QuestionDisplay question={question} position={position + 1} total={session.questions.length} />
       </div>
 
-      <label htmlFor="answer" className="mt-4 block text-sm font-semibold text-darkslate-700">Your answer</label>
-      <textarea
-        id="answer"
-        value={answer}
-        onChange={(e) => {
-          setAnswer(e.target.value);
-          if (error) setError(null);
-        }}
-        rows={8}
-        className="mt-1 w-full rounded-xl border border-sage-400 bg-white p-3 text-darkslate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600"
-        placeholder="Type your answer as you would say it in the interview…"
-      />
+      {mode === "mic" ? (
+        <VoiceAnswer key={position} value={answer} onChange={changeAnswer} onSpokenSeconds={setSpokenSeconds} />
+      ) : (
+        <>
+          <label htmlFor="answer" className="mt-4 block text-sm font-semibold text-darkslate-700">Your answer</label>
+          <textarea
+            id="answer"
+            value={answer}
+            onChange={(e) => changeAnswer(e.target.value)}
+            rows={8}
+            className="mt-1 w-full rounded-xl border border-sage-400 bg-white p-3 text-darkslate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600"
+            placeholder="Type your answer as you would say it in the interview…"
+          />
+        </>
+      )}
 
       {error && (
         <div role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</div>
