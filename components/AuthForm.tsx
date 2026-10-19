@@ -16,7 +16,7 @@ type Mode = "signin" | "signup";
 
 function Field({ id, label, error, type, ...input }: { id: string; label: string; error?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="mt-4">
+    <div className="mt-3">
       <label htmlFor={id} className="block text-sm font-semibold text-darkslate-700">{label}</label>
       {type === "password" ? (
         <PasswordInput id={id} aria-invalid={error ? true : undefined} aria-describedby={error ? `${id}-error` : undefined} {...input} />
@@ -54,6 +54,7 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
   const [notice, setNotice] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const [providers, setProviders] = useState<SocialAvailability | null>(null);
+  const [providerNotice, setProviderNotice] = useState<string | null>(null);
 
   // Show a social button only for providers the server has configured.
   useEffect(() => {
@@ -200,6 +201,7 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
 
   const switchTo = (next: Mode) => {
     setMode(next);
+    setProviderNotice(null);
     setError(null);
     setFields({});
   };
@@ -235,7 +237,7 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
   }
 
   return (
-    <div className="card animate-scale-in p-5 sm:p-7">
+    <div className="card animate-scale-in p-5 sm:p-6">
       <SegmentedControl
         label="Sign in or create an account"
         fill
@@ -244,23 +246,32 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
         options={[{ value: "signin", label: "Sign in" }, { value: "signup", label: "Create account" }]}
       />
 
-      <div className="mt-4">
-        <SocialSignIn availability={providers} callbackUrl={callbackUrl} />
-        <p className="pt-3 text-center text-xs text-darkslate-600">or use your email</p>
+      {/* The same height in both modes, so switching between them never moves anything below the tabs. */}
+      <div className="mt-4 flex items-center gap-3">
+        <Logo size={32} className="lg:hidden" />
+        <h1 className="text-xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
       </div>
-      {oauthError && <ErrorMessage className="mt-4">{oauthError}</ErrorMessage>}
 
-      <form onSubmit={submit} noValidate className="mt-2">
-        <div className="mt-4 flex items-center gap-3">
-          <Logo size={40} />
-          <h1 className="text-xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+      <div className="mt-3">
+        <SocialSignIn availability={providers} callbackUrl={callbackUrl} onUnavailable={(label) => setProviderNotice(`Sign-in with ${label} isn't set up on this server yet. Please use your email and password for now.`)} />
+      </div>
+      <div className="my-3 flex items-center gap-3 text-xs text-darkslate-600" aria-hidden="true">
+        <span className="h-px flex-1 bg-sage-300" />
+        or use your email
+        <span className="h-px flex-1 bg-sage-300" />
+      </div>
+      {providerNotice && <ErrorMessage variant="warning" className="mb-3">{providerNotice}</ErrorMessage>}
+      {oauthError && <ErrorMessage className="mb-3">{oauthError}</ErrorMessage>}
+
+      <form onSubmit={submit} noValidate className="flow-root">
+        <div className={mode === "signup" ? "grid gap-3 sm:grid-cols-2" : ""}>
+          {mode === "signup" && (
+            <div className="animate-fade-up">
+              <Field id="name" label="Name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} error={fields.name} />
+            </div>
+          )}
+          <Field id="email" label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fields.email} />
         </div>
-        <p className="text-sm text-darkslate-600">Your account keeps your practice history across devices.</p>
-
-        {mode === "signup" && (
-          <Field id="name" label="Name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} error={fields.name} />
-        )}
-        <Field id="email" label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fields.email} />
         <Field
           id="password"
           label="Password"
@@ -270,11 +281,11 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
           onChange={(e) => setPassword(e.target.value)}
           error={fields.password}
         />
-        {mode === "signup" && !fields.password && <p className="mt-1 text-xs text-darkslate-600">At least 8 characters.</p>}
+        <p className="mt-1 min-h-4 text-xs text-darkslate-600">{mode === "signup" && !fields.password ? "At least 8 characters." : ""}</p>
 
-        {error && <ErrorMessage className="mt-4">{error}</ErrorMessage>}
+        {error && <ErrorMessage className="mt-3">{error}</ErrorMessage>}
 
-        <div className="mt-5">
+        <div className="mt-3">
           <Button type="submit" size="lg" fullWidth loading={busy}>{mode === "signin" ? "Sign in" : "Create account"}</Button>
         </div>
       </form>

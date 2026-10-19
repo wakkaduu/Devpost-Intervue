@@ -1,6 +1,5 @@
 import AuthForm from "@/components/AuthForm";
 import Logo from "@/components/Logo";
-import Page from "@/components/ui/Page";
 
 export const metadata = { title: "Sign in" };
 
@@ -13,11 +12,13 @@ const PERKS = [
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string; error?: string }> }) {
   const { callbackUrl, error } = await searchParams;
   return (
-    <Page>
-      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16 lg:py-10">
+    // Exactly one screen tall (below the header) and centred, so on a laptop nothing needs scrolling.
+    // On a small phone the form is taller than the screen, so the page can still scroll there.
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--header-h))] w-full max-w-[96rem] items-start px-4 py-6 sm:px-6 lg:items-center lg:px-10 lg:py-4">
+      <div className="grid w-full items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="hidden lg:block">
-          <Logo size={72} className="animate-scale-in drop-shadow-lg" />
-          <h2 className="mt-6 max-w-lg text-5xl font-black leading-[1.05] tracking-tight text-white">Keep every practice session.</h2>
+          <Logo size={64} className="animate-scale-in drop-shadow-lg" />
+          <h2 className="mt-5 max-w-lg text-5xl font-black leading-[1.05] tracking-tight text-white">Keep every practice session.</h2>
           <p className="mt-4 max-w-md text-lg text-forest-100">An account saves your scores, so the chart can show how far you’ve come.</p>
           <ul className="mt-8 space-y-3">
             {PERKS.map((perk, i) => (
@@ -34,6 +35,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <AuthForm callbackUrl={callbackUrl} authError={error} />
         </div>
       </div>
-    </Page>
+    </div>
   );
 }

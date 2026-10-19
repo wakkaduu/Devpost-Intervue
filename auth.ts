@@ -1,5 +1,6 @@
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Facebook from "next-auth/providers/facebook";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { isEmailVerified, verifyUserCredentials } from "@/lib/db";
@@ -60,6 +61,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
     // A provider only exists when both its id and secret are set, so the login page can hide the button otherwise.
     ...(enabled.google ? [Google({ clientId: process.env.AUTH_GOOGLE_ID, clientSecret: process.env.AUTH_GOOGLE_SECRET })] : []),
+    ...(enabled.facebook ? [Facebook({ clientId: process.env.AUTH_FACEBOOK_ID, clientSecret: process.env.AUTH_FACEBOOK_SECRET })] : []),
     ...(enabled.github ? [GitHub({ clientId: process.env.AUTH_GITHUB_ID, clientSecret: process.env.AUTH_GITHUB_SECRET })] : []),
   ],
   callbacks: {

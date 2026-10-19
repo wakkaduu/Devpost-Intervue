@@ -18,38 +18,36 @@ const PROVIDERS: { id: keyof SocialAvailability; label: string; icon: ReactNode 
 ];
 
 /**
- * The social sign-in row. Every provider is shown with its icon so people can see what is coming; the ones
- * that aren't set up yet are disabled and say "Soon". `availability` is null while the server is being asked.
+ * The social sign-in row. Every button is always clickable. If the server has that provider's keys, it starts the
+ * sign-in; if not, `onUnavailable` is told so the page can explain, instead of sending people to an error page.
+ * `availability` is null while the server is still being asked, in which case the click goes straight through.
  */
-export default function SocialSignIn({ availability, callbackUrl }: { availability: SocialAvailability | null; callbackUrl?: string }) {
+export default function SocialSignIn({
+  availability,
+  callbackUrl,
+  onUnavailable,
+}: {
+  availability: SocialAvailability | null;
+  callbackUrl?: string;
+  onUnavailable?: (label: string) => void;
+}) {
   return (
     <div role="group" aria-label="Sign in with another account" className="grid gap-2 sm:grid-cols-3">
-      {PROVIDERS.map((p) => {
-        const loading = availability === null;
-        const enabled = !loading && availability[p.id];
-        return (
-          <button
-            key={p.id}
-            type="button"
-            disabled={!enabled}
-            aria-label={enabled || loading ? `Continue with ${p.label}` : `Continue with ${p.label} (coming soon)`}
-            onClick={() => signIn(p.id, { callbackUrl: safeCallbackPath(callbackUrl) })}
-            className={[
-              "relative flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border px-3 text-sm font-bold transition duration-200",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600",
-              enabled
-                ? "border-sage-400 bg-white text-darkslate-900 hover:-translate-y-0.5 hover:border-forest-600 hover:shadow-card active:translate-y-0"
-                : "cursor-not-allowed border-sage-300 bg-white/50 text-darkslate-600",
-            ].join(" ")}
-          >
-            <span className={enabled || loading ? "" : "opacity-50 grayscale"}>{p.icon}</span>
-            {p.label}
-            {!loading && !enabled && (
-              <span className="absolute -top-2 right-2 rounded-full bg-gold-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-900 ring-1 ring-gold-300">Soon</span>
-            )}
-          </button>
-        );
-      })}
+      {PROVIDERS.map((p) => (
+        <button
+          key={p.id}
+          type="button"
+          aria-label={`Continue with ${p.label}`}
+          onClick={() => {
+            if (availability && !availability[p.id]) onUnavailable?.(p.label);
+            else void signIn(p.id, { callbackUrl: safeCallbackPath(callbackUrl) });
+          }}
+          className="flex min-h-[44px] items-center justify-center gap-2.5 rounded-xl border border-sage-400 bg-white px-3 text-sm font-bold text-darkslate-900 transition duration-200 hover:-translate-y-0.5 hover:border-forest-600 hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 active:translate-y-0"
+        >
+          {p.icon}
+          {p.label}
+        </button>
+      ))}
     </div>
   );
 }

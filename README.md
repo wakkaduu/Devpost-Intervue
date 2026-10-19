@@ -42,13 +42,14 @@ Everything is configured in `.env.local`, which is git-ignored. **Never commit i
 | `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Accounts and saved history | Supabase project → Project Settings → API (use the **service_role** key) |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | "Continue with GitHub" (optional) | GitHub → Settings → Developer settings → OAuth Apps |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | "Continue with Google" (optional) | Google Cloud console → Credentials |
+| `AUTH_FACEBOOK_ID` / `AUTH_FACEBOOK_SECRET` | "Continue with Facebook" (optional) | [Meta for Developers](https://developers.facebook.com/apps) → your app → Settings → Basic |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Emailing confirmation codes | [Resend](https://resend.com/api-keys) |
 
 Without a Gemini or Groq key the app still runs and gives "basic feedback". Without Supabase it works as a guest-only app. Without a Resend key, confirmation codes are printed in the server terminal during development.
 
 **Database.** In a new Supabase project, open the SQL Editor and run [`supabase/schema.sql`](supabase/schema.sql) once. It creates the `users` and `interview_sessions` tables with row-level security on.
 
-**Social sign-in.** Set the OAuth callback URL to `http://localhost:3000/api/auth/callback/github` (or `/google`). A button only appears when its id and secret are both set.
+**Social sign-in.** Set the OAuth callback URL to `http://localhost:3000/api/auth/callback/github` (or `/google`, `/facebook`). The three buttons always show; one without its keys explains that it isn't set up on this server yet.
 
 **Email.** Until you verify a domain with Resend, use `EMAIL_FROM=Intervue <onboarding@resend.dev>`; Resend then delivers only to your own Resend account's email address.
 

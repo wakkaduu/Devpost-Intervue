@@ -36,6 +36,19 @@ describe("resolveOAuthSignIn", () => {
     expect(await resolveOAuthSignIn({ provider: "google", user: { email: null }, profile: { email_verified: true } }, d)).toBeNull();
   });
 
+  it("lets Facebook sign in when it supplies an email (it only supplies confirmed ones)", async () => {
+    const d = deps();
+    expect(await resolveOAuthSignIn({ provider: "facebook", user: { email: "A@Example.com", name: "A" } }, d)).toBe("our-id");
+    expect(d.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ email: "a@example.com" }));
+  });
+
+  it("refuses Facebook with no email, such as a phone-number-only account", async () => {
+    const d = deps();
+    expect(await resolveOAuthSignIn({ provider: "facebook", user: { email: null } }, d)).toBeNull();
+    expect(await resolveOAuthSignIn({ provider: "facebook", user: {} }, d)).toBeNull();
+    expect(d.upsertUser).not.toHaveBeenCalled();
+  });
+
   it("refuses unknown providers", async () => {
     expect(await resolveOAuthSignIn({ provider: "evil", user: { email: "a@example.com" } }, deps())).toBeNull();
   });
@@ -44,6 +57,8 @@ describe("resolveOAuthSignIn", () => {
 describe("availableProviders", () => {
   it("needs both id and secret", () => {
     expect(availableProviders({})).toEqual({ google: false, github: false, facebook: false });
+    expect(availableProviders({ AUTH_FACEBOOK_ID: "x" }).facebook).toBe(false);
+    expect(availableProviders({ AUTH_FACEBOOK_ID: "x", AUTH_FACEBOOK_SECRET: "y" }).facebook).toBe(true);
     expect(availableProviders({ AUTH_GOOGLE_ID: "x" })).toEqual({ google: false, github: false, facebook: false });
     expect(availableProviders({ AUTH_GOOGLE_ID: "x", AUTH_GOOGLE_SECRET: "y", AUTH_GITHUB_ID: "a", AUTH_GITHUB_SECRET: "b" })).toEqual({ google: true, github: true, facebook: false });
   });

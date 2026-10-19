@@ -162,6 +162,8 @@ Build mode: learn
 - [x] Motion and richer disclosure: animated accordions for answers and track groups, sliding segmented controls, drawer slide, score count-up, chart draw-in, staggered entrances, skeleton loaders, all disabled by prefers-reduced-motion (learner request during final review)
 - [x] Track sidebar shows all 52 tracks at once in a single flat list, with no sections (learner request during final review)
 - [x] Login shows GitHub, Google and Facebook buttons with their icons; providers not set up yet are disabled and marked "Soon" (learner request during final review)
+- [x] Social sign-in buttons are always clickable (no "Soon"); a provider without keys explains itself, and Facebook is fully wired so adding its two keys turns it on (learner request during final review)
+- [x] Login page fits on one screen on laptops and desktops with no scrolling, and switching between Sign in and Create account moves nothing (learner request during final review)
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

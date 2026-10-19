@@ -34,6 +34,9 @@ export async function resolveOAuthSignIn(input: OAuthInput, deps: OAuthDeps = de
 
   if (input.provider === "google") {
     if (input.profile?.email_verified !== true) return null;
+  } else if (input.provider === "facebook") {
+    // Facebook's Graph API only returns an email address that the person has confirmed, so a present email
+    // is a verified one. (No email at all, for example a phone-only account, is refused above.)
   } else if (input.provider === "github") {
     if (!input.accessToken) return null;
     const emails = await deps.fetchGithubEmails(input.accessToken);
@@ -51,7 +54,6 @@ export function availableProviders(env: Record<string, string | undefined> = pro
   return {
     google: Boolean(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET),
     github: Boolean(env.AUTH_GITHUB_ID && env.AUTH_GITHUB_SECRET),
-    // Shown on the login page but not built yet.
-    facebook: false,
+    facebook: Boolean(env.AUTH_FACEBOOK_ID && env.AUTH_FACEBOOK_SECRET),
   };
 }
