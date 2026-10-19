@@ -151,8 +151,8 @@ Build mode: learn
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 3 (written session end to end), where feedback can still shape voice, history and accounts
-- [ ] Final kick-the-tires exploration and feedback completed
+- [x] Early usable behavior explored — after slice 3 (written session end to end), where feedback can still shape voice, history and accounts
+- [x] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
 
@@ -168,19 +168,19 @@ Build mode: learn
 - [x] Voice recording is one continuous action: when live captions are unavailable, the same Start press records audio and transcribes it on Stop, instead of swapping in a second "Record audio" button (learner report during final review)
 - [x] "Couldn't read the question aloud" fixed: browsers with no working voice (Brave on Linux) now use a server voice from Gemini, fetched ahead of time and cached, restricted to our own questions (learner report during final review)
 - [x] Every track now has 15 questions (156 new ones, 780 in total) and a practice session asks 12 of them; the debrief limit was raised so a full session works (learner request during final review)
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship (learner confirmed: "The app is ready")
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: prior practice connected. During final review a voice-recording bug (two clicks needed in Brave) was reproduced as failing tests that now pass: `components/__tests__/AudioFallback.test.tsx` ("the Brave case"), fixed in `components/VoiceAnswer.tsx` (`const switching`). Practice named: turn a reported bug into a failing test before fixing it.
+Route and stops: reference route only (not toured): `context/SessionContext.tsx` (`runReview`), `app/api/review/route.ts` (`POST`), `lib/evaluator.ts` (`evaluateAnswer`).
+Edit outcome: not applicable (no incidental edit was made for the wrap-up).
+Reflection: offered (optional question about what to do differently next time with an agent).
+Activity mode: prior practice connected, with a reference app map (`devpost/app-map.html`, snapshot of commit c30b06e).
 
 ## Revisions
 - Confirmation email sender changed from Resend to nodemailer over SMTP (Gmail app password by default) — the learner chose this during final review after Resend's free sender refused to deliver to any address except the account owner's, which blocked normal sign-ups; the spec's Stack, External Services and key list were updated to match.

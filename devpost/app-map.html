@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intervue app map</title>
+<style>
+  :root { --bg:#f4f8f5; --ink:#1f2933; --muted:#52606d; --card:#ffffff; --line:#cfdfd4; --green:#344e41; --accent:#1f7a4d; --gold:#7a4d00; --code:#eef5f0; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16241c; --ink:#f2f7f4; --muted:#b8cebf; --card:#1f3328; --line:#3d5a4a; --green:#bcd0c4; --accent:#6ee7b7; --gold:#f7d08a; --code:#14221a; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 62rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  h1 { font-size: 2rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; color: var(--green); }
+  h3 { font-size: 1.05rem; margin: 0 0 .25rem; }
+  p { margin: .4rem 0; }
+  .lede { color: var(--muted); max-width: 46rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.1rem; }
+  .grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  code, .path { overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; background: var(--code); border-radius: 6px; padding: .08em .35em; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 10px; padding: .8rem; overflow-x: auto; font-size: .88rem; margin: .5rem 0; }
+  pre code { background: none; padding: 0; overflow-wrap: normal; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: .1rem 1rem; margin: .6rem 0; }
+  summary { cursor: pointer; padding: .7rem 0; font-weight: 700; }
+  summary:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  .stop { border-left: 4px solid var(--accent); padding-left: .9rem; margin: .9rem 0; }
+  .tag { display:inline-block; font-size:.78rem; font-weight:700; border-radius:999px; padding:.1rem .6rem; background: var(--code); border:1px solid var(--line); color: var(--gold); }
+  table { width:100%; border-collapse: collapse; font-size: .95rem; }
+  th, td { text-align:left; padding:.5rem .6rem; border-bottom:1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-size:.82rem; text-transform: uppercase; letter-spacing:.04em; }
+  svg { max-width: 100%; height: auto; }
+  svg text { font: 13px system-ui, sans-serif; fill: var(--ink); }
+  svg .box { fill: var(--card); stroke: var(--green); stroke-width: 1.5; }
+  svg .hot { fill: var(--code); stroke: var(--accent); stroke-width: 2; }
+  svg .arrow { stroke: var(--accent); stroke-width: 2; fill: none; }
+  svg .small { font-size: 11.5px; fill: var(--muted); }
+  footer { margin-top: 2.5rem; color: var(--muted); font-size: .92rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Intervue: app map</h1>
+  <p class="lede">A mock interview web app. You pick a track, answer questions by voice or in writing, and the AI reviews each answer, quoting what you actually said. This page shows where the main pieces live, so you know where to look when you want to change something. It works offline and needs no script.</p>
+
+  <h2>The few main pieces</h2>
+  <div class="grid">
+    <div class="card"><h3>Screens (browser)</h3><p><span class="path">app/</span> holds the pages (Home, interview, results, history, login). <span class="path">components/</span> holds the pieces they are built from.</p></div>
+    <div class="card"><h3>Server doors (API routes)</h3><p><span class="path">app/api/</span> is where the browser asks the server for things: <code>review</code>, <code>review/summary</code>, <code>transcribe</code>, <code>speak</code>, <code>history</code>, and <code>auth/*</code>. Secret keys live only here.</p></div>
+    <div class="card"><h3>Logic and services</h3><p><span class="path">lib/</span> holds the review prompts and the Gemini, Groq and basic graders, scoring, history, autosave, validation, rate limiting, email and the server voice.</p></div>
+    <div class="card"><h3>Data</h3><p><span class="path">data/questions.json</span> (52 tracks of 15 questions), the browser's <code>localStorage</code> for guests, and Supabase (<span class="path">supabase/schema.sql</span>) for accounts and saved sessions.</p></div>
+  </div>
+
+  <h2>One action, end to end: answering a question</h2>
+  <svg role="img" aria-labelledby="dtitle ddesc" viewBox="0 0 900 330">
+    <title id="dtitle">How one answer becomes a review</title>
+    <desc id="ddesc">The browser sends the answer to the review route on the server. The server tries Gemini, then Groq, then the basic grader, and sends the review back to be shown. Finished sessions are saved to local storage or Supabase.</desc>
+    <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f7a4d"/></marker></defs>
+    <rect class="box" x="10" y="20" width="200" height="86" rx="12"/>
+    <text x="24" y="46" font-weight="700">1. You press Next</text>
+    <text class="small" x="24" y="66">components/InterviewSession.tsx</text>
+    <text class="small" x="24" y="84">next() → submit()</text>
+    <rect class="hot" x="260" y="20" width="200" height="86" rx="12"/>
+    <text x="274" y="46" font-weight="700">2. Review starts</text>
+    <text class="small" x="274" y="66">context/SessionContext.tsx</text>
+    <text class="small" x="274" y="84">runReview() → fetch</text>
+    <rect class="hot" x="510" y="20" width="190" height="86" rx="12"/>
+    <text x="524" y="46" font-weight="700">3. Server door</text>
+    <text class="small" x="524" y="66">app/api/review/route.ts</text>
+    <text class="small" x="524" y="84">POST: limit, check, evaluate</text>
+    <rect class="hot" x="740" y="20" width="150" height="86" rx="12"/>
+    <text x="752" y="46" font-weight="700">4. Chain</text>
+    <text class="small" x="752" y="66">lib/evaluator.ts</text>
+    <text class="small" x="752" y="84">evaluateAnswer()</text>
+    <path class="arrow" d="M210 63 H258" marker-end="url(#head)"/>
+    <path class="arrow" d="M460 63 H508" marker-end="url(#head)"/>
+    <path class="arrow" d="M700 63 H738" marker-end="url(#head)"/>
+
+    <rect class="box" x="640" y="170" width="120" height="60" rx="10"/>
+    <text x="652" y="194" font-weight="700">Gemini</text><text class="small" x="652" y="212">lib/gemini.ts</text>
+    <rect class="box" x="775" y="170" width="115" height="60" rx="10"/>
+    <text x="787" y="194" font-weight="700">Groq</text><text class="small" x="787" y="212">lib/groq-llm.ts</text>
+    <rect class="box" x="640" y="250" width="250" height="56" rx="10"/>
+    <text x="652" y="274" font-weight="700">Basic grader (no AI)</text><text class="small" x="652" y="292">lib/basic-grader.ts · labelled “basic”</text>
+    <path class="arrow" d="M815 106 V168" marker-end="url(#head)"/>
+    <text class="small" x="822" y="150">tries in order</text>
+
+    <rect class="box" x="10" y="170" width="260" height="86" rx="12"/>
+    <text x="24" y="196" font-weight="700">5. You see the review</text>
+    <text class="small" x="24" y="216">components/FeedbackPanel.tsx</text>
+    <text class="small" x="24" y="234">score, fix first, stronger version, follow-up</text>
+    <path class="arrow" d="M640 200 H400 V213 H272" marker-end="url(#head)"/>
+    <text class="small" x="405" y="192">review comes back as JSON</text>
+
+    <rect class="box" x="300" y="270" width="320" height="46" rx="10"/>
+    <text x="312" y="291" font-weight="700">Finished session is saved</text>
+    <text class="small" x="312" y="307">lib/session-save.ts → localStorage (guest) or Supabase</text>
+  </svg>
+
+  <h2>A route to follow (reference route)</h2>
+  <p>This is a suggested way to read the code for the action above. It was not toured step by step; use it when you want to trace how an answer turns into a review.</p>
+  <div class="stop">
+    <p><span class="tag">Stop 1</span> <strong>The browser asks for a review</strong></p>
+    <p><span class="path">context/SessionContext.tsx</span> → search for <code>const runReview</code>. It builds the request (question, answer, mode, earlier feedback points so the AI doesn't repeat itself), calls <code>/api/review</code> in the background, and stores the result on the answer.</p>
+  </div>
+  <div class="stop">
+    <p><span class="tag">Stop 2</span> <strong>The server door checks and delegates</strong></p>
+    <p><span class="path">app/api/review/route.ts</span> → <code>export async function POST</code>. It applies the rate limit, reads the body safely, validates it with <code>validateReviewRequest</code> (<span class="path">lib/validation.ts</span>), then calls <code>evaluateAnswer</code>. Errors are turned into a generic message so internals never reach the user.</p>
+  </div>
+  <div class="stop">
+    <p><span class="tag">Stop 3</span> <strong>The provider chain</strong></p>
+    <p><span class="path">lib/evaluator.ts</span> → <code>export async function evaluateAnswer</code>. Gemini first, then Groq, each with its own time limit, then <code>basicReview</code>. The response says which one answered (<code>source</code> and <code>provider</code>), and the prompt that asks for feedback quoting the person's own words is <code>buildPrompt</code> in <span class="path">lib/gemini.ts</span>.</p>
+  </div>
+
+  <h2>To change this, start here</h2>
+  <table>
+    <thead><tr><th scope="col">I want to…</th><th scope="col">Start in</th></tr></thead>
+    <tbody>
+      <tr><td>Change how the AI writes feedback</td><td><span class="path">lib/gemini.ts</span> → <code>buildPrompt</code> (Groq reuses it)</td></tr>
+      <tr><td>Add or edit interview questions</td><td><span class="path">data/questions.json</span>; the test <span class="path">lib/__tests__/question-bank.test.ts</span> checks every track keeps 15 unique questions</td></tr>
+      <tr><td>Change how many questions a session asks</td><td><span class="path">lib/questions.ts</span> → <code>SESSION_QUESTION_COUNT</code></td></tr>
+      <tr><td>Change the track list or its order</td><td><span class="path">lib/tracks.ts</span> → <code>TRACK_GROUPS</code></td></tr>
+      <tr><td>Change colors and spacing</td><td><span class="path">tailwind.config.ts</span> (the green, sage and gold tokens) and <span class="path">app/globals.css</span></td></tr>
+      <tr><td>Make limits stricter or looser</td><td><span class="path">lib/security/rate-limiter.ts</span> → <code>LIMITS</code></td></tr>
+      <tr><td>Change how confirmation emails are sent</td><td><span class="path">lib/email.ts</span> → <code>readSmtpConfig</code> (SMTP settings come from <code>.env.local</code>)</td></tr>
+      <tr><td>Change where history is saved</td><td><span class="path">lib/session-save.ts</span> → <code>saveSession</code>; accounts use <code>saveUserSession</code> in <span class="path">lib/db.ts</span>, guests use <code>saveGuestSession</code> in <span class="path">lib/guest-storage.ts</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>A practice to reuse</h2>
+  <div class="card">
+    <h3>Turn a reported bug into a failing test before fixing it</h3>
+    <p><strong>What happened:</strong> voice recording needed two clicks in Brave. The report said the error “flashed” and the second click worked. That clue pointed to the order of events: Brave opens the microphone and only then reports that live captions failed, which the fallback code did not expect.</p>
+    <p><strong>The evidence:</strong> the tests in <span class="path">components/__tests__/AudioFallback.test.tsx</span> under “the Brave case” recreate exactly that order. They failed on the old <span class="path">components/VoiceAnswer.tsx</span> and pass on the fix (see <code>const switching</code>), so the bug can't quietly come back.</p>
+    <p><strong>Use it again:</strong> on any project, write down the exact symptom and the sequence behind it, reproduce it as a test that fails, then change the code until it passes. A fix with a failing-then-passing test is much easier to trust than one that “looks right”.</p>
+  </div>
+
+  <details>
+    <summary>Run it again</summary>
+    <pre><code>npm install
+cp .env.example .env.local   # then add your keys (see README.md)
+npm run dev                  # http://localhost:3000
+npm run test:run             # all tests</code></pre>
+    <p>The README lists each key, the database setup, and the optional social sign-in and email settings.</p>
+  </details>
+
+  <footer>
+    This map is a snapshot of the code at commit <code>c30b06e</code>. Files move and names change over time, so if a path here no longer exists, search for the name in the code.
+  </footer>
+</main>
+</body>
+</html>
