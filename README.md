@@ -94,3 +94,7 @@ supabase/       schema.sql
 ## Tests
 
 `npm run test:run` runs the full suite (unit tests for scoring, validation, security, the provider chain and the review prompts, plus component tests for the whole interview, results, history and sign-in flows).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
