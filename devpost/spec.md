@@ -22,7 +22,7 @@ Why this shape: it is the stack the learner already knows from the first build, 
 PRD ref: `prd.md > The Core Journey`.
 
 1. **Home** — the page reads the track list from the question file and the last-used mode from `localStorage`. The user picks a track and mode and presses Start. The browser goes to `/interview?category=…&mode=…`.
-2. **Voice setup / interview** — the page loads that track's questions. Voice mode uses the browser's speech recognition for the live transcript (and records audio as a fallback). The draft autosaves to `localStorage` as they type or speak.
+2. **Voice setup / interview** — the page loads that track's questions. Voice mode uses the browser's speech recognition for the live transcript, and falls back automatically to recording audio when live captions are unavailable. The draft autosaves to `localStorage` as they type or speak.
 3. **Each answer** — when they move on, the browser sends the question, answer, track, and earlier feedback points to `POST /api/review`. The server validates it, builds the prompt, calls Gemini (then Groq, then the built-in basic grader if both fail), and returns the structured review. This runs while they answer the next question. Delivery metrics (words per minute, fillers) are computed in the browser from the transcript and timer.
 4. **Fallback transcription** — if the browser cannot transcribe, the recorded audio is sent to `POST /api/transcribe`, which uses Groq Whisper or Gemini.
 5. **Results** — after the last question the summary page averages the scores, then calls `POST /api/review/summary` for the AI debrief across all answers.
@@ -34,7 +34,7 @@ Versions from the existing `package.json`; re-verify at install.
 
 - **Next.js ^16.2 (App Router) + React ^19 + TypeScript ^5** — pages and API routes in one project. [docs](https://nextjs.org/docs)
 - **Tailwind CSS ^3.4** — styling with the green/sage/gold tokens. [docs](https://tailwindcss.com/docs)
-- **Auth.js / next-auth ^5 beta** — email/password (credentials), Google, GitHub. [docs](https://authjs.dev)
+- **Auth.js / next-auth ^5 beta** — email/password (credentials), Google, GitHub, Facebook. [docs](https://authjs.dev)
 - **bcryptjs ^3** — hashing passwords.
 - **Supabase (`@supabase/supabase-js` ^2)** — hosted Postgres for users and sessions. [docs](https://supabase.com/docs)
 - **Gemini (`@google/generative-ai` ^0.24)** — review, debrief, and transcription fallback. [docs](https://ai.google.dev/gemini-api/docs)
@@ -49,7 +49,7 @@ Unverified: current Gemini and Groq model names (`GEMINI_MODEL=gemini-flash-lite
 
 ## Where It Runs and How Someone Tries It
 - **Runtime:** Node.js (the old project ran on v24) with `npm install`, then `npm run dev`, then open http://localhost:3000.
-- **Keys needed (in `.env.local`, never committed):** `GEMINI_API_KEY`, `GROQ_API_KEY`, `AUTH_SECRET`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_GITHUB_ID/SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SMTP_USER`, `SMTP_PASSWORD` (optional `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `EMAIL_FROM`), `GEMINI_MODEL`, `GROQ_MODEL`. The repo ships only `.env.example` with placeholders.
+- **Keys needed (in `.env.local`, never committed):** `GEMINI_API_KEY`, `GROQ_API_KEY`, `AUTH_SECRET`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_GITHUB_ID/SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SMTP_USER`, `SMTP_PASSWORD` (optional `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `EMAIL_FROM`), `GEMINI_MODEL`, `GROQ_MODEL`, `AUTH_TRUST_HOST` (for production builds), optional `AUTH_FACEBOOK_ID/SECRET`, `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOICE`. The repo ships only `.env.example` with placeholders.
 - **Database setup:** run `supabase/schema.sql` in a fresh Supabase project's SQL editor.
 - **Demo recording:** run locally and record: pick a track, answer by voice and in writing, show a review, the results/debrief, and the history chart with a few sessions. Works in Chrome (best speech support).
 - **Submission:** a short demo video and a public GitHub repo are required. Vercel deployment is optional and planned by the learner after the app works; it does not replace the video.
@@ -69,7 +69,7 @@ Focal start card, mode toggle, searchable picker of 52 grouped tracks. Files: `a
 One question at a time, timer, autosave, read-aloud, voice setup and mic check. Files: `app/interview/page.tsx`, `hooks/useInterviewSession.ts`, `components/QuestionDisplay.tsx`, `MicCheck.tsx`, `TranscriptArea.tsx`, `InterviewerVoiceControls.tsx`, `lib/session-draft.ts`. PRD ref: `prd.md > Answering by voice`, `Answering in writing`.
 
 ### Speech in the browser
-Live transcript, recording, text-to-speech. Files: `hooks/useSpeechRecognition.ts`, `hooks/useAudioRecorder.ts`, `lib/speech-synthesis.ts`, `components/RecordingControls.tsx`. PRD ref: `prd.md > Answering by voice`, `Interviewer voice`.
+Live transcript, recording, text-to-speech. Files: `hooks/useSpeechRecognition.ts`, `hooks/useAudioRecorder.ts`, `components/VoiceAnswer.tsx` (one Start button: live captions, or audio recording transcribed on Stop when captions are unavailable), `lib/speech-synthesis.ts`, `lib/interviewer-voice.ts`. When a browser has no voice of its own (for example Brave on Linux), the question is read by the server voice: `lib/server-voice.ts`, `lib/tts.ts`, `app/api/speak/route.ts` (Gemini text-to-speech, restricted to questions in the bank, cached and fetched ahead). PRD ref: `prd.md > Answering by voice`, `Interviewer voice`.
 
 ### Delivery feedback
 Words per minute, pace label, filler words. Files: `lib/speech-metrics.ts`, `components/LiveDeliveryHUD.tsx`. PRD ref: `prd.md > Delivery feedback`.
@@ -90,7 +90,7 @@ Files: `app/summary/page.tsx`, `components/FeedbackPanel.tsx`, `ScoreRing.tsx`, 
 Files: `app/history/page.tsx`, `components/ScoreTrendChart.tsx`, `lib/progress-trend.ts`, `app/api/history/route.ts`, `lib/session-save.ts`, `lib/guest-storage.ts`. PRD ref: `prd.md > History and progress chart`.
 
 ### Accounts and sign-in
-Credentials, Google, GitHub; email confirmation code with resend; rate limiting. Files: `auth.ts`, `app/login/page.tsx`, `components/AuthModal.tsx`, `AuthProvider.tsx`, `app/api/auth/*` (nextauth, register, confirm-email, resend-confirmation, providers-available), `lib/db.ts`, `lib/supabase.ts`, `lib/email.ts`, `lib/security/*`. PRD ref: `prd.md > Accounts and saved history`, `Email sign-up with confirmation`.
+Credentials, Google, GitHub, Facebook (each social button works once its keys are set); email confirmation code with resend; rate limiting. Files: `auth.ts`, `app/login/page.tsx`, `components/AuthForm.tsx`, `SocialSignIn.tsx`, `AuthProvider.tsx`, `app/api/auth/*` (nextauth, register, confirm-email, resend-confirmation, providers-available), `lib/db.ts`, `lib/supabase.ts`, `lib/email.ts`, `lib/security/*`. PRD ref: `prd.md > Accounts and saved history`, `Email sign-up with confirmation`.
 
 ### Shared UI, PWA and layout
 Files: `components/ui/Button.tsx`, `PasswordInput.tsx`, `AppHeader.tsx`, `ErrorMessage.tsx`, `LoadingSpinner.tsx`, `app/layout.tsx`, `app/manifest.ts`, `public/`. PRD ref: `prd.md > Shared button/UI system`, `PWA support`.
@@ -124,10 +124,11 @@ intervue-learn/
 │       ├── review/route.ts            # AI review (provider chain)
 │       ├── review/summary/route.ts    # AI debrief
 │       ├── transcribe/route.ts        # Audio → text fallback
+│       ├── speak/route.ts             # Question → spoken audio (server voice fallback)
 │       ├── history/route.ts           # Save/load sessions
 │       └── auth/ [...nextauth], register, confirm-email, resend-confirmation, providers-available
 ├── components/               # UI pieces (listed under Components)
-│   └── ui/                   # Button, PasswordInput
+│   └── ui/                   # Button, PasswordInput, ErrorMessage, LoadingSpinner, Accordion, SegmentedControl
 ├── context/SidebarContext.tsx
 ├── hooks/                    # useInterviewSession, useSpeechRecognition, useAudioRecorder
 ├── lib/                      # evaluator, gemini, groq-llm, db, supabase, email, validation,
@@ -150,16 +151,16 @@ intervue-learn/
 - **Groq** — chat model as second reviewer and Whisper for transcription; free key, rate-limited. [docs](https://console.groq.com/docs)
 - **Supabase** — service-role key used only server-side. Free tier. [docs](https://supabase.com/docs)
 - **SMTP (nodemailer)** — sends 6-digit confirmation codes. Defaults to Gmail over SSL with an app password; works with any SMTP service via `SMTP_HOST`/`SMTP_PORT`. Gmail limits daily sends.
-- **Google and GitHub OAuth** — client ID and secret per provider, with `http://localhost:3000/api/auth/callback/<provider>` as the redirect. [Google](https://console.cloud.google.com/apis/credentials), [GitHub](https://github.com/settings/developers)
+- **Google, GitHub and Facebook OAuth** — client ID and secret per provider, with `http://localhost:3000/api/auth/callback/<provider>` as the redirect. [Google](https://console.cloud.google.com/apis/credentials), [GitHub](https://github.com/settings/developers)
 - Specific endpoints and response shapes will be verified against current docs at the start of each build step; nothing here implies a lookup has happened.
 
 ## Important Failure Modes
 - **AI provider slow or down** → each provider gets 12 seconds; after Gemini then Groq fail, the built-in grader answers and the screen says it is "basic feedback". A retry is offered.
-- **Microphone denied or browser speech unsupported** → clear message, typed fallback, up to 3 retries; audio goes to `/api/transcribe` where available.
+- **Microphone denied** → clear message and a typed fallback. **Live captions unavailable or failing** (unsupported browser, unreachable speech service) → the same Start press records audio, which `/api/transcribe` turns into text when you stop. **No browser voice** → the server voice (`/api/speak`) reads the question.
 - **Supabase save fails or duplicate save** → the user keeps their results on screen with a notice; saves are idempotent so no duplicate chart points. Guests are unaffected (local storage).
 
 ## What Was Simplified and Why
-- **Interviewer voice via the browser's Web Speech API**, not ElevenLabs — the old app never used ElevenLabs, and it removes a paid service.
+- **Interviewer voice via the browser's Web Speech API, with a Gemini server voice as fallback**, not ElevenLabs — the old app never used ElevenLabs, and it avoids a paid service. The fallback exists because some browsers (Brave, Chromium on Linux) have the speech API but no voices.
 - **No pre-seeded demo account** — it carried a known password in a public repo.
 - **AI keys server-only; no user-facing API-key modal** — learner decision; fewer ways to leak a key.
 - **Core-first build order** — the extended set (email confirmation, PWA, provider fallback, etc.) comes after the demoable core.
@@ -179,5 +180,5 @@ intervue-learn/
 **Open / to verify early in the build**
 - Current Gemini and Groq model names and rate limits.
 - Whether `next-auth` v5 beta and the old `eslint-config-next` (14.x) alongside Next 16 install cleanly; the old repo mixes these.
-- Public-repo hygiene: the old repo's `.env.example` contained what looked like a real ElevenLabs key. The learner should revoke it; the rebuild's `.env.example` holds placeholders only.
+- Public-repo hygiene: real keys live only in `.env.local`, which is git-ignored. The repo's `.env.example` holds placeholders only, and the full git history was checked for secrets before publishing.
 - No unresolved questions remain from `prd.md > Open Questions`.
