@@ -5,6 +5,8 @@ import HistoryView from "@/components/HistoryView";
 import { saveGuestSession } from "@/lib/guest-storage";
 import type { SavedSession } from "@/types";
 
+const authState = vi.hoisted(() => ({ status: "unauthenticated" as "loading" | "authenticated" | "unauthenticated" }));
+vi.mock("next-auth/react", () => ({ useSession: () => ({ status: authState.status, data: null }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, ...p }: any) => <a href={href} {...p}>{children}</a> }));
 
 const saved = (id: string, score: number, day: number, category = "Behavioral"): SavedSession => ({

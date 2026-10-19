@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession as useAccount } from "next-auth/react";
 import DeliveryPanel from "@/components/DeliveryPanel";
 import FeedbackPanel from "@/components/FeedbackPanel";
 import SessionDebriefCard, { type DebriefView } from "@/components/SessionDebriefCard";
@@ -17,6 +18,7 @@ import { buildSavedSession, saveSession, type SaveResult } from "@/lib/session-s
 export default function SessionSummary() {
   const { session, retry, requestDebrief } = useSession();
 
+  const { status: accountStatus } = useAccount();
   const [saveResult, setSaveResult] = useState<SaveResult | null>(null);
 
   // Save once every review has settled. Saving is an upsert by session id, so a retried review
@@ -24,8 +26,15 @@ export default function SessionSummary() {
   const record = session ? buildSavedSession(session) : null;
   const recordKey = record ? `${record.id}:${record.averageScore}:${record.questionCount}` : null;
   useEffect(() => {
-    if (record) setSaveResult(saveSession(record));
-  }, [recordKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!record || accountStatus === "loading") return;
+    let cancelled = false;
+    saveSession(record, accountStatus === "authenticated").then((r) => {
+      if (!cancelled) setSaveResult(r);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [recordKey, accountStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const reviewedCount = session?.entries.filter((e) => e.status === "done").length ?? 0;
   const anyLoading = session?.entries.some((e) => e.status === "loading") ?? false;
@@ -85,9 +94,11 @@ export default function SessionSummary() {
         )}
         {saveResult && (
           saveResult.ok ? (
-            <p role="status" className="mt-4 text-sm text-darkslate-600">
-              Saved to your history. <Link href="/history" className="font-semibold text-forest-700 underline">See your progress</Link>
-            </p>
+            <div role="status" className="mt-4 text-sm text-darkslate-600">
+              {saveResult.notice && <p className="mb-1 rounded-lg bg-gold-100 p-2 font-semibold text-gold-900">{saveResult.notice}</p>}
+              Saved to your history{saveResult.where === "account" ? " (your account)" : ""}.{" "}
+              <Link href="/history" className="font-semibold text-forest-700 underline">See your progress</Link>
+            </div>
           ) : (
             <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{saveResult.error}</p>
           )

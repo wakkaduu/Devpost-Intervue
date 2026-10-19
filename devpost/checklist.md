@@ -69,7 +69,7 @@ Build mode: learn
   Learner check: Complete two sessions and confirm the chart shows two points and states the change since your first session.
   Commit: `Add guest history and progress chart`
 
-- [ ] **7. Sign up, sign in, and history that follows your account**
+- [x] **7. Sign up, sign in, and history that follows your account**
   Becomes usable: Create an account with email/password, sign in, and have sessions saved to Supabase and shown in History across devices.
   Why now: The first external-database integration; the guest flow already works so any failure is isolated.
   PRD ref: `prd.md > Accounts and saved history`, `prd.md > Screens and Layout` (Sign in / Sign up)

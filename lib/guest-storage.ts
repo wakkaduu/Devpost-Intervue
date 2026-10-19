@@ -37,3 +37,10 @@ export function saveGuestSession(session: SavedSession): void {
     .slice(-MAX_SESSIONS);
   window.localStorage.setItem(GUEST_SESSIONS_KEY, JSON.stringify(next));
 }
+
+/** Removes sessions by id, e.g. after they were added to an account. */
+export function removeGuestSessions(ids: string[]): void {
+  const drop = new Set(ids);
+  const remaining = loadGuestSessions().filter((s) => !drop.has(s.id));
+  window.localStorage.setItem(GUEST_SESSIONS_KEY, JSON.stringify(remaining));
+}

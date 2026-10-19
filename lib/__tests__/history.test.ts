@@ -32,11 +32,37 @@ describe("guest storage", () => {
     expect(loadGuestSessions().map((s) => s.id)).toEqual(["ok"]);
   });
 
-  it("saveSession reports an error instead of throwing when storage is blocked", () => {
+  it("saveSession reports an error instead of throwing when storage is blocked", async () => {
     const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("full"); });
-    const result = saveSession(saved("a", 6, "2026-01-01T00:00:00Z"));
+    const result = await saveSession(saved("a", 6, "2026-01-01T00:00:00Z"), false);
     spy.mockRestore();
     expect(result.ok).toBe(false);
+  });
+
+  it("a guest save goes to the browser", async () => {
+    expect(await saveSession(saved("a", 6, "2026-01-01T00:00:00Z"), false)).toEqual({ ok: true, where: "browser" });
+    expect(loadGuestSessions()).toHaveLength(1);
+  });
+
+  it("a signed-in save goes to the account and not the browser", async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({}) }));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await saveSession(saved("a", 6, "2026-01-01T00:00:00Z"), true)).toEqual({ ok: true, where: "account" });
+    expect(fetchMock).toHaveBeenCalledWith("/api/history", expect.objectContaining({ method: "POST" }));
+    expect(loadGuestSessions()).toHaveLength(0);
+  });
+
+  it("if the account save fails, the session is kept in the browser with a notice", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, json: async () => ({ error: "x" }) })));
+    const r = await saveSession(saved("a", 6, "2026-01-01T00:00:00Z"), true);
+    expect(r).toMatchObject({ ok: true, where: "browser" });
+    expect((r as { notice?: string }).notice).toMatch(/saved in this browser instead/);
+    expect(loadGuestSessions()).toHaveLength(1);
+  });
+
+  it("if the network is down too, a signed-in save still falls back to the browser", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
+    expect(await saveSession(saved("a", 6, "2026-01-01T00:00:00Z"), true)).toMatchObject({ ok: true, where: "browser" });
   });
 });
 
