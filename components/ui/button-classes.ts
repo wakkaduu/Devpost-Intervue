@@ -18,7 +18,7 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "accent" | "dark
 export type ButtonSize = "sm" | "md" | "lg";
 
 export const BASE =
-  "inline-flex items-center justify-center gap-2 font-bold whitespace-nowrap select-none " +
+  "inline-flex items-center justify-center gap-2 font-bold text-center select-none " +
   "transition-[background-color,border-color,color,box-shadow,transform] duration-150 motion-reduce:transition-none " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 " +
   "active:translate-y-px motion-reduce:active:translate-y-0 " +

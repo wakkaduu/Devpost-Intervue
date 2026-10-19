@@ -14,6 +14,8 @@ import { MIN_DEBRIEF_ENTRIES } from "@/lib/debrief";
 import { averageScore, formatDuration } from "@/lib/session-logic";
 import { scoreVerdict } from "@/lib/score-verdict";
 import { buildSavedSession, saveSession, type SaveResult } from "@/lib/session-save";
+import ErrorMessage from "@/components/ui/ErrorMessage";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function SessionSummary() {
   const { session, retry, requestDebrief } = useSession();
@@ -97,12 +99,12 @@ export default function SessionSummary() {
         {saveResult && (
           saveResult.ok ? (
             <div role="status" className="mt-4 text-sm text-darkslate-600">
-              {saveResult.notice && <p className="mb-1 rounded-lg bg-gold-100 p-2 font-semibold text-gold-900">{saveResult.notice}</p>}
+              {saveResult.notice && <ErrorMessage variant="warning" className="mb-1 font-semibold">{saveResult.notice}</ErrorMessage>}
               Saved to your history{saveResult.where === "account" ? " (your account)" : ""}.{" "}
               <Link href="/history" className="font-semibold text-forest-700 underline">See your progress</Link>
             </div>
           ) : (
-            <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{saveResult.error}</p>
+            <ErrorMessage className="mt-4">{saveResult.error}</ErrorMessage>
           )
         )}
         <div className="mt-5">
@@ -126,12 +128,12 @@ export default function SessionSummary() {
               <p className="mt-1 whitespace-pre-wrap text-sm">{entry.answer}</p>
             </div>
             {entry.delivery && <DeliveryPanel delivery={entry.delivery} transcript={entry.answer} />}
-            {entry.status === "loading" && <p role="status" className="text-sm font-semibold text-darkslate-600">Reviewing this answer…</p>}
+            {entry.status === "loading" && <LoadingSpinner label="Reviewing this answer…" />}
             {entry.status === "error" && (
-              <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+              <ErrorMessage>
                 <p>{entry.error}</p>
                 <Button className="mt-2" size="sm" variant="danger" onClick={() => retry(i)}>Retry review</Button>
-              </div>
+              </ErrorMessage>
             )}
             {entry.feedback && <FeedbackPanel feedback={entry.feedback} onRetry={entry.status === "loading" ? undefined : () => retry(i)} />}
           </div>

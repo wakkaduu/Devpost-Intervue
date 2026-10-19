@@ -53,7 +53,7 @@ describe("History", () => {
     saveGuestSession(saved("a", 5, 1));
     saveGuestSession(saved("b", 7, 2));
     render(<HistoryView />);
-    await userEvent.click(await screen.findByRole("button", { name: "table" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Table" }));
     const rows = within(screen.getByRole("table")).getAllByRole("row");
     expect(rows).toHaveLength(3); // header + 2 sessions
     expect(within(rows[1]).getByText("7")).toBeInTheDocument(); // newest first

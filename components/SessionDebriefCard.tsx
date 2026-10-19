@@ -1,5 +1,6 @@
 import Button from "@/components/ui/Button";
 import type { Debrief } from "@/types";
+import ErrorMessage from "@/components/ui/ErrorMessage";
 
 export type DebriefView =
   | { status: "too-few" }
@@ -42,10 +43,10 @@ export default function SessionDebriefCard({
     return (
       <section aria-label="Session debrief" className={shell}>
         <h2 className="text-lg font-bold">Session debrief</h2>
-        <div role="alert" className="mt-2 rounded-lg bg-red-50 p-3 text-sm text-red-800">
+        <ErrorMessage className="mt-2">
           <p>{view.error}</p>
           <Button className="mt-2" size="sm" variant="danger" onClick={onRetry}>Retry debrief</Button>
-        </div>
+        </ErrorMessage>
       </section>
     );
   }

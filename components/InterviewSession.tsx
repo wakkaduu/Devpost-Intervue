@@ -11,6 +11,8 @@ import { useSession } from "@/context/SessionContext";
 import { formatDuration } from "@/lib/session-logic";
 import type { PracticeMode } from "@/lib/mode-storage";
 import { clearDraft, loadDraft, saveDraft, type SessionDraft } from "@/lib/session-draft";
+import ErrorMessage from "@/components/ui/ErrorMessage";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function InterviewSession({ category, mode }: { category: string; mode: PracticeMode }) {
   const router = useRouter();
@@ -137,7 +139,7 @@ export default function InterviewSession({ category, mode }: { category: string;
   }
 
   if (!session || !question) {
-    return <p className="text-forest-100" role="status">Loading your questions…</p>;
+    return <LoadingSpinner label="Loading your questions…" onCanvas />;
   }
 
   if (needsSetup) return <VoiceSetup questionCount={session.questions.length} onBegin={() => setBegun(true)} />;
@@ -188,7 +190,7 @@ export default function InterviewSession({ category, mode }: { category: string;
       )}
 
       {error && (
-        <div role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</div>
+        <ErrorMessage className="mt-3">{error}</ErrorMessage>
       )}
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row-reverse">

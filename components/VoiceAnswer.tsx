@@ -7,6 +7,7 @@ import { useSpeechRecognition, joinTranscript, MAX_RECORDING_MS } from "@/hooks/
 import LiveDeliveryHUD from "@/components/LiveDeliveryHUD";
 import { stopSpeaking } from "@/lib/speech-synthesis";
 import { formatDuration } from "@/lib/session-logic";
+import ErrorMessage from "@/components/ui/ErrorMessage";
 
 interface Props {
   value: string;
@@ -157,7 +158,7 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
         <p role="status" className="mt-2 text-sm font-semibold text-gold-800">Recording stopped automatically after {MAX_AUDIO_RECORDING_MS / 60000} minutes.</p>
       )}
       {(audioError || recorder.error) && (
-        <div role="alert" className="mt-2 rounded-lg bg-red-50 p-3 text-sm text-red-800">{audioError ?? recorder.error}</div>
+        <ErrorMessage className="mt-2">{audioError ?? recorder.error}</ErrorMessage>
       )}
 
       {speech.autoStopped && (
@@ -167,10 +168,10 @@ export default function VoiceAnswer({ value, onChange, onSpokenSeconds, onRecord
       )}
 
       {speech.error && (
-        <div role="alert" className="mt-2 rounded-lg bg-red-50 p-3 text-sm text-red-800">
+        <ErrorMessage className="mt-2">
           {speech.error}
           {!speech.typingOnly && speech.retryCount > 0 && ` (${speech.retryCount} of 3 tries used)`}
-        </div>
+        </ErrorMessage>
       )}
       {speech.typingOnly && !speech.error && (
         <p className="mt-2 text-sm text-darkslate-600">Voice isn’t available, so please type your answer.</p>

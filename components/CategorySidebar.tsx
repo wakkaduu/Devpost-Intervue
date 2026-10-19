@@ -12,14 +12,36 @@ export default function CategorySidebar() {
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
 
+  const panelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!pickerOpen) return;
+    // Keyboard users: move focus into the dialog, keep Tab inside it, and give focus back when it closes.
+    const opener = document.activeElement as HTMLElement | null;
     searchRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPickerOpen(false);
+      if (e.key === "Escape") {
+        setPickerOpen(false);
+        return;
+      }
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      opener?.focus?.();
+    };
   }, [pickerOpen, setPickerOpen]);
 
   if (!pickerOpen) return null;
@@ -30,7 +52,8 @@ export default function CategorySidebar() {
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
       <div className="absolute inset-0 bg-black/50" onClick={() => setPickerOpen(false)} aria-hidden="true" />
-      <aside
+      <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Choose a track"
@@ -78,7 +101,7 @@ export default function CategorySidebar() {
             </section>
           ))}
         </div>
-      </aside>
+      </div>
     </div>
   );
 }

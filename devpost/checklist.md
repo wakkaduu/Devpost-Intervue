@@ -139,7 +139,7 @@ Build mode: learn
   Learner check: Try submitting odd inputs and rapid repeated sign-in attempts and confirm friendly errors.
   Commit: `Add rate limiting and input validation`
 
-- [ ] **14. PWA, UI consistency and accessibility pass**
+- [x] **14. PWA, UI consistency and accessibility pass**
   Becomes usable: Installable on a phone; all screens use the shared UI system, keep AA contrast and focus rings, and work from 320px.
   Why now: Final polish over finished screens.
   PRD ref: `prd.md > PWA support`, `prd.md > Shared button/UI system`, `prd.md > States and Boundaries` (Mobile)

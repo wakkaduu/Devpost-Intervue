@@ -10,6 +10,8 @@ import { loadGuestSessions, removeGuestSessions } from "@/lib/guest-storage";
 import { trendPoints, trendSummary } from "@/lib/progress-trend";
 import { splitTrackName } from "@/lib/questions";
 import type { SavedSession } from "@/types";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import SegmentedControl from "@/components/ui/SegmentedControl";
 
 const dateFmt = new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" });
 
@@ -96,7 +98,7 @@ export default function HistoryView() {
       </div>
     );
   }
-  if (sessions === null) return <p className="text-forest-100" role="status">Loading your history…</p>;
+  if (sessions === null) return <LoadingSpinner label="Loading your history…" onCanvas />;
 
   if (sessions.length === 0) {
     return (
@@ -128,22 +130,7 @@ export default function HistoryView() {
               {tracks.map((t) => <option key={t} value={t}>{splitTrackName(t).title}</option>)}
             </select>
           </div>
-          <div role="group" aria-label="Chart or table" className="flex gap-1">
-            {(["chart", "table"] as const).map((v) => (
-              <button
-                key={v}
-                type="button"
-                aria-pressed={view === v}
-                onClick={() => setView(v)}
-                className={[
-                  "min-h-[44px] rounded-xl px-4 text-sm font-bold capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600",
-                  view === v ? "bg-forest-700 text-white" : "border border-sage-400 bg-white text-forest-800",
-                ].join(" ")}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl label="Chart or table" value={view} onChange={setView} options={[{ value: "chart", label: "Chart" }, { value: "table", label: "Table" }]} />
         </div>
 
         <p className="mt-4 text-base font-semibold" aria-live="polite">
@@ -156,7 +143,7 @@ export default function HistoryView() {
             <p className="text-xs text-darkslate-600">Average score per session, out of 10. Newest on the right.</p>
           </div>
         ) : (
-          <div className="mt-2 overflow-x-auto">
+          <div className="mt-2 overflow-x-auto" role="region" aria-label="Scores for each session" tabIndex={0}>
             <table className="w-full text-left text-sm">
               <caption className="sr-only">Average score for each session</caption>
               <thead>

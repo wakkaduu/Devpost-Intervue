@@ -7,6 +7,7 @@ import { useSidebar } from "@/context/SidebarContext";
 import { getTrackIcon, sessionLength, splitTrackName } from "@/lib/questions";
 import { DEFAULT_MODE, loadMode, saveMode, type PracticeMode } from "@/lib/mode-storage";
 import { buildInterviewUrl } from "@/lib/start-practice";
+import ErrorMessage from "@/components/ui/ErrorMessage";
 
 const MODES: { value: PracticeMode; label: string }[] = [
   { value: "mic", label: "Voice" },
@@ -79,7 +80,7 @@ export default function StartCard() {
       </fieldset>
 
       {error && (
-        <div role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</div>
+        <ErrorMessage className="mt-4">{error}</ErrorMessage>
       )}
 
       <div className="mt-5">

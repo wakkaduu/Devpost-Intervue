@@ -4,6 +4,8 @@ import { buttonClasses } from "@/components/ui/button-classes";
 import { isValidTrack, splitTrackName } from "@/lib/questions";
 import type { PracticeMode } from "@/lib/mode-storage";
 
+export const metadata = { title: "Practice" };
+
 export default async function InterviewPage({
   searchParams,
 }: {
