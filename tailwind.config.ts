@@ -8,13 +8,35 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Motion language: short, ease-out, never blocking. Everything below is switched off by prefers-reduced-motion (globals.css).
       keyframes: {
         "slide-in-left": { from: { transform: "translateX(-100%)" }, to: { transform: "translateX(0)" } },
         "fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+        "fade-up": { from: { opacity: "0", transform: "translateY(14px)" }, to: { opacity: "1", transform: "translateY(0)" } },
+        "scale-in": { from: { opacity: "0", transform: "scale(0.96)" }, to: { opacity: "1", transform: "scale(1)" } },
+        pop: { "0%": { opacity: "0", transform: "scale(0)" }, "70%": { transform: "scale(1.25)" }, "100%": { opacity: "1", transform: "scale(1)" } },
+        "scale-x": { from: { transform: "scaleX(0)" }, to: { transform: "scaleX(1)" } },
+        shimmer: { "100%": { transform: "translateX(100%)" } },
+        draw: { from: { strokeDashoffset: "1" }, to: { strokeDashoffset: "0" } },
+        "pulse-ring": { "0%": { boxShadow: "0 0 0 0 rgba(220,38,38,0.55)" }, "100%": { boxShadow: "0 0 0 14px rgba(220,38,38,0)" } },
+        float: { "0%,100%": { transform: "translate3d(0,0,0)" }, "50%": { transform: "translate3d(0,-24px,0)" } },
       },
       animation: {
-        "slide-in-left": "slide-in-left 200ms ease-out",
-        "fade-in": "fade-in 200ms ease-out",
+        "slide-in-left": "slide-in-left 260ms cubic-bezier(0.22,1,0.36,1)",
+        "fade-in": "fade-in 220ms ease-out",
+        "fade-up": "fade-up 480ms cubic-bezier(0.22,1,0.36,1) backwards",
+        "scale-in": "scale-in 260ms cubic-bezier(0.22,1,0.36,1) backwards",
+        pop: "pop 420ms cubic-bezier(0.22,1,0.36,1) backwards",
+        "scale-x": "scale-x 700ms cubic-bezier(0.22,1,0.36,1) backwards",
+        shimmer: "shimmer 1.6s infinite",
+        draw: "draw 1100ms cubic-bezier(0.65,0,0.35,1) forwards",
+        "pulse-ring": "pulse-ring 1.4s ease-out infinite",
+        float: "float 14s ease-in-out infinite",
+      },
+      boxShadow: {
+        card: "0 1px 2px rgba(10,25,18,0.12), 0 8px 24px -8px rgba(10,25,18,0.35)",
+        lift: "0 2px 4px rgba(10,25,18,0.14), 0 16px 32px -10px rgba(10,25,18,0.45)",
+        glow: "0 0 0 1px rgba(110,231,183,0.25), 0 8px 30px -6px rgba(16,185,129,0.45)",
       },
       fontFamily: { sans: ["var(--font-inter)", "system-ui", "sans-serif"] },
       colors: {

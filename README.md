@@ -13,6 +13,7 @@ Built with Next.js, TypeScript, Gemini (with Groq as a backup reviewer), Supabas
 - **History and progress chart:** one point per session, filterable by track, with a table view and a plain-language "up/down since your first session".
 - **Guest or account.** Guests keep history in their browser. Accounts (email + confirmation code, Google, GitHub) keep it across devices.
 - **Resilience:** if Gemini fails, Groq reviews the answer; if both fail, a clearly labelled "basic feedback" grader answers and offers a retry. Unfinished sessions can be resumed for 24 hours.
+- **Full-width layout and motion:** screens use the whole window, the track list docks on the left of Home, and answers and track groups open with smooth accordions. All animation switches off when your system asks for reduced motion.
 - **Interviewer voice** reads each question aloud (mute and speed saved), the app is **installable on a phone**, and screens work from 320px wide.
 
 ## Run it locally

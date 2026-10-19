@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import ErrorMessage from "@/components/ui/ErrorMessage";
@@ -65,7 +65,7 @@ describe("track picker dialog (keyboard use)", () => {
     setup();
     await userEvent.click(screen.getByRole("button", { name: "Open picker" }));
     expect(screen.getByRole("dialog", { name: "Choose a track" })).toHaveAttribute("aria-modal", "true");
-    expect(screen.getByLabelText("Search tracks")).toHaveFocus();
+    expect(within(screen.getByRole("dialog")).getByLabelText("Search tracks")).toHaveFocus();
   });
 
   it("keeps Tab inside the dialog, both directions", async () => {

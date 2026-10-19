@@ -29,7 +29,7 @@ export default function ResumePrompt({
   const draftTrack = splitTrackName(session.category).title;
 
   return (
-    <div role="region" aria-label="Resume your session" className="rounded-2xl bg-sage-100 p-5 text-darkslate-900 sm:p-6">
+    <div role="region" aria-label="Resume your session" className="card p-5 sm:p-6">
       <h2 className="text-xl font-bold">Pick up where you left off?</h2>
       <p className="mt-2 text-sm">
         You have an unfinished <strong>{draftTrack}</strong> session from {ago(draft.savedAt)}: {answered} of {total} {total === 1 ? "question" : "questions"} answered

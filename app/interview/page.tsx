@@ -1,5 +1,6 @@
 import Link from "next/link";
 import InterviewSession from "@/components/InterviewSession";
+import Page from "@/components/ui/Page";
 import { buttonClasses } from "@/components/ui/button-classes";
 import { isValidTrack, splitTrackName } from "@/lib/questions";
 import type { PracticeMode } from "@/lib/mode-storage";
@@ -15,23 +16,21 @@ export default async function InterviewPage({
 
   if (!isValidTrack(category)) {
     return (
-      <div className="mx-auto w-full max-w-2xl px-4 py-12">
-        <div className="rounded-2xl bg-sage-100 p-6 text-darkslate-900">
+      <Page>
+        <div className="card mx-auto max-w-xl p-6">
           <h1 className="text-xl font-semibold">We couldn’t find that track.</h1>
           <p className="mt-1 text-sm">Pick a track from the home page to start.</p>
           <Link href="/" className={buttonClasses({ className: "mt-4" })}>Back to Home</Link>
         </div>
-      </div>
+      </Page>
     );
   }
 
   const practiceMode: PracticeMode = mode === "typed" ? "typed" : "mic";
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:py-12">
-      <h1 className="text-2xl font-bold text-white">{splitTrackName(category).title}</h1>
-      <div className="mt-4">
-        <InterviewSession category={category} mode={practiceMode} />
-      </div>
-    </div>
+    <Page>
+      <h1 className="mb-6 text-2xl font-black tracking-tight text-white sm:text-3xl">{splitTrackName(category).title}</h1>
+      <InterviewSession category={category} mode={practiceMode} />
+    </Page>
   );
 }

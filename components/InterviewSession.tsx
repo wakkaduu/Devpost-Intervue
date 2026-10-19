@@ -135,7 +135,11 @@ export default function InterviewSession({ category, mode }: { category: string;
   }, [session, category, router]);
 
   if (gate === "prompt" && draft) {
-    return <ResumePrompt draft={draft} requestedTrack={category} onResume={resumeDraft} onStartNew={startNew} />;
+    return (
+      <div className="mx-auto max-w-2xl">
+        <ResumePrompt draft={draft} requestedTrack={category} onResume={resumeDraft} onStartNew={startNew} />
+      </div>
+    );
   }
 
   if (!session || !question) {
@@ -159,47 +163,54 @@ export default function InterviewSession({ category, mode }: { category: string;
     finish(answer.trim() ? { answer, durationSec: elapsed, spokenSeconds } : undefined);
   }
 
+  const total = session.questions.length;
+
   return (
-    <div className="rounded-2xl bg-sage-100 p-5 sm:p-6 text-darkslate-900">
-      <div className="flex items-center justify-between text-sm text-darkslate-600">
-        <progress className="sr-only" max={session.questions.length} value={position} aria-label="Session progress" />
-        <div aria-hidden="true" className="mr-4 h-2 flex-1 overflow-hidden rounded-full bg-sage-300">
-          <div className="h-full bg-forest-700" style={{ width: `${(position / session.questions.length) * 100}%` }} />
+    <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
+      <section aria-label="Question" className="card p-5 sm:p-7 lg:sticky lg:top-[calc(var(--header-h)+1.5rem)] lg:col-span-5 lg:self-start">
+        <div className="flex items-center gap-4 text-sm text-darkslate-600">
+          <progress className="sr-only" max={total} value={position} aria-label="Session progress" />
+          <div aria-hidden="true" className="flex flex-1 gap-1.5">
+            {Array.from({ length: total }, (_, i) => (
+              <span key={i} className="h-2 flex-1 overflow-hidden rounded-full bg-sage-300">
+                <span className={`block h-full rounded-full bg-gradient-to-r from-forest-700 to-emerald-500 transition-all duration-500 ease-out ${i < position ? "w-full" : i === position ? "w-1/3" : "w-0"}`} />
+              </span>
+            ))}
+          </div>
+          <span aria-label="Time on this question" className="rounded-full bg-white/70 px-3 py-1 font-semibold tabular-nums text-darkslate-800 ring-1 ring-sage-300">{formatDuration(elapsed)}</span>
         </div>
-        <span aria-label="Time on this question" className="tabular-nums font-semibold">{formatDuration(elapsed)}</span>
-      </div>
 
-      <div className="mt-4">
-        <QuestionDisplay question={question} position={position + 1} total={session.questions.length} paused={recording} />
-      </div>
+        <div key={position} className="mt-6 animate-fade-up">
+          <QuestionDisplay question={question} position={position + 1} total={total} paused={recording} />
+        </div>
+      </section>
 
-      {activeMode === "mic" ? (
-        <VoiceAnswer key={position} value={answer} onChange={changeAnswer} onSpokenSeconds={setSpokenSeconds} onRecordingChange={setRecording} />
-      ) : (
-        <>
-          <label htmlFor="answer" className="mt-4 block text-sm font-semibold text-darkslate-700">Your answer</label>
-          <textarea
-            id="answer"
-            value={answer}
-            onChange={(e) => changeAnswer(e.target.value)}
-            rows={8}
-            className="mt-1 w-full rounded-xl border border-sage-400 bg-white p-3 text-darkslate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600"
-            placeholder="Type your answer as you would say it in the interview…"
-          />
-        </>
-      )}
+      <section aria-label="Answer workspace" className="card p-5 sm:p-7 lg:col-span-7">
+        {activeMode === "mic" ? (
+          <VoiceAnswer key={position} value={answer} onChange={changeAnswer} onSpokenSeconds={setSpokenSeconds} onRecordingChange={setRecording} />
+        ) : (
+          <div key={position} className="animate-fade-up">
+            <label htmlFor="answer" className="block text-sm font-semibold text-darkslate-700">Your answer</label>
+            <textarea
+              id="answer"
+              value={answer}
+              onChange={(e) => changeAnswer(e.target.value)}
+              rows={12}
+              className="mt-2 w-full resize-y rounded-xl border border-sage-400 bg-white p-4 text-base leading-relaxed text-darkslate-900 shadow-inner transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600"
+              placeholder="Type your answer as you would say it in the interview…"
+            />
+            <p className="mt-1 text-right text-xs tabular-nums text-darkslate-600">{answer.trim() ? answer.trim().split(/\s+/).length : 0} words</p>
+          </div>
+        )}
 
-      {error && (
-        <ErrorMessage className="mt-3">{error}</ErrorMessage>
-      )}
+        {error && <ErrorMessage className="mt-3">{error}</ErrorMessage>}
 
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row-reverse">
-        <Button size="lg" onClick={next} className="sm:flex-1">{isLast ? "Finish and see results" : "Next question"}</Button>
-        <Button size="lg" variant="secondary" onClick={endEarly}>End early</Button>
-      </div>
-      <p className="mt-3 text-xs text-darkslate-600">
-        Each answer is reviewed in the background while you answer the next one.
-      </p>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
+          <Button size="lg" onClick={next} className="sm:flex-1">{isLast ? "Finish and see results" : "Next question"}</Button>
+          <Button size="lg" variant="secondary" onClick={endEarly}>End early</Button>
+        </div>
+        <p className="mt-3 text-xs text-darkslate-600">Each answer is reviewed in the background while you answer the next one.</p>
+      </section>
     </div>
   );
 }

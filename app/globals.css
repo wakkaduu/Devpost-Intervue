@@ -5,14 +5,83 @@
 :root {
   --background: #23382B;
   --foreground: #F2F7F4;
+  --header-h: 4rem;
 }
 
 html,
 body {
-  background-color: #23382B;
+  background-color: #1c2e23;
 }
 
 body {
   color: var(--foreground);
   min-height: 100vh;
+}
+
+/* Ambient backdrop: two soft glows drifting slowly behind everything, so the page never feels flat. */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  border-radius: 9999px;
+  pointer-events: none;
+  will-change: transform; /* animated on the compositor; the radial gradients are already soft, so no blur filter is needed */
+}
+body::before {
+  top: -12rem;
+  left: -8rem;
+  width: 38rem;
+  height: 38rem;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.28), transparent 68%);
+  animation: float 16s ease-in-out infinite;
+}
+body::after {
+  right: -10rem;
+  bottom: -14rem;
+  width: 44rem;
+  height: 44rem;
+  background: radial-gradient(circle, rgba(230, 159, 0, 0.14), transparent 68%);
+  animation: float 20s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -24px, 0);
+  }
+}
+
+@layer components {
+  /* The light card surface used throughout. */
+  .card {
+    @apply rounded-2xl bg-sage-100 text-darkslate-900 shadow-card ring-1 ring-white/40;
+  }
+  /* A card that responds to the pointer. */
+  .card-hover {
+    @apply transition duration-300 ease-out hover:-translate-y-1 hover:shadow-lift;
+  }
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-wider text-forest-600;
+  }
+}
+
+/* People who ask their system for less motion get none: no animation, no transition, no smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  body::before,
+  body::after {
+    animation: none !important;
+  }
 }

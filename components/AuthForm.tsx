@@ -205,7 +205,7 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
 
   if (step === "confirm") {
     return (
-      <div className="rounded-2xl bg-sage-100 p-5 sm:p-6 text-darkslate-900">
+      <div className="card animate-scale-in p-5 sm:p-7">
         <form onSubmit={confirm} noValidate>
           <h1 className="text-xl font-bold">Check your email</h1>
           {notice && <p role="status" className="mt-2 text-sm text-darkslate-700">{notice}</p>}
@@ -234,7 +234,7 @@ export default function AuthForm({ callbackUrl, authError }: { callbackUrl?: str
   }
 
   return (
-    <div className="rounded-2xl bg-sage-100 p-5 sm:p-6 text-darkslate-900">
+    <div className="card animate-scale-in p-5 sm:p-7">
       <SegmentedControl
         label="Sign in or create an account"
         fill

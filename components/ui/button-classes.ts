@@ -26,9 +26,9 @@ export const BASE =
 
 export const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    "bg-forest-700 text-white shadow-sm hover:bg-forest-600 active:bg-forest-800 focus-visible:ring-forest-600 ring-offset-sage-100",
+    "bg-forest-700 text-white shadow-sm hover:-translate-y-0.5 hover:bg-forest-600 hover:shadow-lift active:bg-forest-800 focus-visible:ring-forest-600 ring-offset-sage-100",
   secondary:
-    "border border-forest-600/60 bg-white/70 text-forest-800 hover:bg-white hover:border-forest-600 focus-visible:ring-forest-600 ring-offset-sage-100",
+    "border border-forest-600/60 bg-white/70 text-forest-800 hover:-translate-y-0.5 hover:bg-white hover:border-forest-600 hover:shadow-card focus-visible:ring-forest-600 ring-offset-sage-100",
   ghost:
     "text-forest-800 hover:bg-forest-900/10 focus-visible:ring-forest-600 ring-offset-sage-100",
   accent:

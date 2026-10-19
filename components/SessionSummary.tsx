@@ -5,7 +5,12 @@ import Link from "next/link";
 import { useSession as useAccount } from "next-auth/react";
 import DeliveryPanel from "@/components/DeliveryPanel";
 import FeedbackPanel from "@/components/FeedbackPanel";
+import ScoreBars from "@/components/ScoreBars";
 import SessionDebriefCard, { type DebriefView } from "@/components/SessionDebriefCard";
+import Accordion from "@/components/ui/Accordion";
+import Page from "@/components/ui/Page";
+import Skeleton from "@/components/ui/Skeleton";
+import { stagger } from "@/lib/motion";
 import ScoreRing from "@/components/ScoreRing";
 import Button, { buttonClasses } from "@/components/ui/Button";
 import { useSession } from "@/context/SessionContext";
@@ -51,11 +56,11 @@ export default function SessionSummary() {
 
   if (!session || !session.finished) {
     return (
-      <div className="rounded-2xl bg-sage-100 p-6 text-darkslate-900">
+      <Page><div className="card mx-auto max-w-xl p-6">
         <h1 className="text-xl font-semibold">No finished session yet.</h1>
         <p className="mt-1 text-sm">Complete a practice session to see your results here.</p>
         <Link href="/" className={buttonClasses({ className: "mt-4" })}>Back to Home</Link>
-      </div>
+      </div></Page>
     );
   }
 
@@ -74,71 +79,106 @@ export default function SessionSummary() {
   else debriefView = { status: "waiting" };
 
   return (
-    <div className="space-y-5">
-      <section aria-label="Your result" className="rounded-2xl bg-sage-100 p-5 sm:p-6 text-darkslate-900">
-        <p className="text-xs font-bold uppercase tracking-wide text-forest-600">{splitTrackName(session.category).title}</p>
-        {entries.length === 0 ? (
-          <div className="mt-2">
-            <h1 className="text-xl font-semibold">No answers submitted</h1>
-            <p className="mt-1 text-sm">You ended the session before answering, so there is nothing to score. Try again whenever you’re ready.</p>
-          </div>
-        ) : (
-          <div className="mt-2 flex items-center gap-5">
-            {average !== null ? <ScoreRing score={average} /> : <div className="h-36 w-36 shrink-0 rounded-full bg-sage-300" aria-hidden="true" />}
-            <div>
-              <h1 className="text-2xl font-bold">{average !== null ? scoreVerdict(average).label : "Reviewing your answers…"}</h1>
-              <p className="mt-1 text-sm text-darkslate-600">
-                Average of {entries.filter((e) => e.status === "done").length} reviewed {entries.length === 1 ? "answer" : "answers"}
-              </p>
-              {basicCount > 0 && <p className="mt-1 text-sm font-semibold text-gold-800">{basicCount} {basicCount === 1 ? "answer has" : "answers have"} basic feedback only, so this score is rough. Open {basicCount === 1 ? "it" : "them"} below to try the AI review again.</p>}
-              {pending > 0 && <p role="status" className="mt-1 text-sm font-semibold text-gold-800">Still reviewing {pending} {pending === 1 ? "answer" : "answers"}; the score will update.</p>}
-              {failed > 0 && <p className="mt-1 text-sm font-semibold text-red-700">{failed} {failed === 1 ? "review" : "reviews"} failed and {failed === 1 ? "isn’t" : "aren’t"} in the average. Retry below.</p>}
-            </div>
-          </div>
-        )}
-        {saveResult && (
-          saveResult.ok ? (
-            <div role="status" className="mt-4 text-sm text-darkslate-600">
-              {saveResult.notice && <ErrorMessage variant="warning" className="mb-1 font-semibold">{saveResult.notice}</ErrorMessage>}
-              Saved to your history{saveResult.where === "account" ? " (your account)" : ""}.{" "}
-              <Link href="/history" className="font-semibold text-forest-700 underline">See your progress</Link>
-            </div>
-          ) : (
-            <ErrorMessage className="mt-4">{saveResult.error}</ErrorMessage>
-          )
-        )}
-        <div className="mt-5">
-          <Link href="/" className={buttonClasses({ size: "lg", fullWidth: true })}>Practice again</Link>
-        </div>
-      </section>
-
-      {entries.length > 0 && (
-        <SessionDebriefCard view={debriefView} numbers={reviewedNumbers} onRetry={requestDebrief} />
-      )}
-
-      {entries.map((entry, i) => (
-        <details key={i} open={i === 0} className="rounded-2xl bg-sage-100 p-4 text-darkslate-900 sm:p-5">
-          <summary className="cursor-pointer text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600">
-            {i + 1}. {entry.question}
-            {entry.feedback && <span className="ml-2 text-sm font-bold text-forest-700">{entry.feedback.score}/10</span>}
-          </summary>
-          <div className="mt-3 space-y-3">
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-wide text-forest-700">Your answer · {formatDuration(entry.durationSec)}</h2>
-              <p className="mt-1 whitespace-pre-wrap text-sm">{entry.answer}</p>
-            </div>
-            {entry.delivery && <DeliveryPanel delivery={entry.delivery} transcript={entry.answer} />}
-            {entry.status === "loading" && <LoadingSpinner label="Reviewing this answer…" />}
-            {entry.status === "error" && (
-              <ErrorMessage>
-                <p>{entry.error}</p>
-                <Button className="mt-2" size="sm" variant="danger" onClick={() => retry(i)}>Retry review</Button>
-              </ErrorMessage>
+    <Page>
+      <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
+        <div className="space-y-6 lg:sticky lg:top-[calc(var(--header-h)+1.5rem)] lg:col-span-4 lg:self-start">
+          <section aria-label="Your result" className="card animate-scale-in p-5 sm:p-7">
+            <p className="eyebrow">{splitTrackName(session.category).title}</p>
+            {entries.length === 0 ? (
+              <div className="mt-2">
+                <h1 className="text-xl font-semibold">No answers submitted</h1>
+                <p className="mt-1 text-sm">You ended the session before answering, so there is nothing to score. Try again whenever you’re ready.</p>
+              </div>
+            ) : (
+              <div className="mt-4 flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left lg:flex-col lg:text-center xl:flex-row xl:text-left">
+                {average !== null ? <ScoreRing score={average} size={160} /> : <Skeleton className="h-40 w-40 shrink-0 rounded-full" />}
+                <div>
+                  <h1 className="text-3xl font-black leading-tight">{average !== null ? scoreVerdict(average).label : "Reviewing your answers…"}</h1>
+                  <p className="mt-1 text-sm text-darkslate-600">
+                    Average of {entries.filter((e) => e.status === "done").length} reviewed {entries.length === 1 ? "answer" : "answers"}
+                  </p>
+                </div>
+              </div>
             )}
-            {entry.feedback && <FeedbackPanel feedback={entry.feedback} onRetry={entry.status === "loading" ? undefined : () => retry(i)} />}
-          </div>
-        </details>
-      ))}
-    </div>
+            <div className="mt-3 space-y-1.5">
+              {basicCount > 0 && <p className="text-sm font-semibold text-gold-800">{basicCount} {basicCount === 1 ? "answer has" : "answers have"} basic feedback only, so this score is rough. Open {basicCount === 1 ? "it" : "them"} below to try the AI review again.</p>}
+              {pending > 0 && <p role="status" className="text-sm font-semibold text-gold-800">Still reviewing {pending} {pending === 1 ? "answer" : "answers"}; the score will update.</p>}
+              {failed > 0 && <p className="text-sm font-semibold text-red-700">{failed} {failed === 1 ? "review" : "reviews"} failed and {failed === 1 ? "isn’t" : "aren’t"} in the average. Retry below.</p>}
+            </div>
+            {saveResult && (
+              saveResult.ok ? (
+                <div role="status" className="mt-4 text-sm text-darkslate-600">
+                  {saveResult.notice && <ErrorMessage variant="warning" className="mb-1 font-semibold">{saveResult.notice}</ErrorMessage>}
+                  Saved to your history{saveResult.where === "account" ? " (your account)" : ""}.{" "}
+                  <Link href="/history" className="font-semibold text-forest-700 underline">See your progress</Link>
+                </div>
+              ) : (
+                <ErrorMessage className="mt-4">{saveResult.error}</ErrorMessage>
+              )
+            )}
+            <div className="mt-5">
+              <Link href="/" className={buttonClasses({ size: "lg", fullWidth: true })}>Practice again</Link>
+            </div>
+          </section>
+          {entries.length > 1 && <ScoreBars entries={entries} />}
+        </div>
+
+        <div className="space-y-6 lg:col-span-8">
+          {entries.length > 0 && <SessionDebriefCard view={debriefView} numbers={reviewedNumbers} onRetry={requestDebrief} />}
+
+          {entries.map((entry, i) => (
+            <div key={i} className="card card-hover animate-fade-up" style={stagger(i + 1, 90)}>
+              <Accordion
+                headingLevel={2}
+                defaultOpen={i === 0}
+                eyebrow={`Answer ${i + 1} · ${formatDuration(entry.durationSec)}`}
+                title={entry.question}
+                badge={<AnswerBadge entry={entry} />}
+              >
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wide text-forest-700">Your answer</h3>
+                    <p className="mt-1 whitespace-pre-wrap text-sm">{entry.answer}</p>
+                  </div>
+                  {entry.delivery && <DeliveryPanel delivery={entry.delivery} transcript={entry.answer} />}
+                  {entry.status === "loading" && (
+                    <div className="space-y-2">
+                      <LoadingSpinner label="Reviewing this answer…" />
+                      <Skeleton className="h-4 w-11/12" />
+                      <Skeleton className="h-4 w-9/12" />
+                      <Skeleton className="h-16 w-full" />
+                    </div>
+                  )}
+                  {entry.status === "error" && (
+                    <ErrorMessage>
+                      <p>{entry.error}</p>
+                      <Button className="mt-2" size="sm" variant="danger" onClick={() => retry(i)}>Retry review</Button>
+                    </ErrorMessage>
+                  )}
+                  {entry.feedback && <FeedbackPanel feedback={entry.feedback} onRetry={entry.status === "loading" ? undefined : () => retry(i)} />}
+                </div>
+              </Accordion>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Page>
   );
+}
+
+/** The small status pill on an answer's header: its score, a "reviewing" spinner, or a failure. */
+function AnswerBadge({ entry }: { entry: import("@/types").SessionEntry }) {
+  if (entry.status === "loading") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-100 px-2.5 py-1 text-xs font-bold text-gold-900">
+        <span aria-hidden="true" className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        Reviewing
+      </span>
+    );
+  }
+  if (entry.status === "error") return <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-bold text-red-800">Failed</span>;
+  if (!entry.feedback) return null;
+  const tone = scoreVerdict(entry.feedback.score).tone;
+  const colour = tone === "good" ? "bg-emerald-100 text-emerald-900" : tone === "mid" ? "bg-gold-100 text-gold-900" : "bg-red-50 text-red-800";
+  return <span className={`animate-pop rounded-full px-2.5 py-1 text-sm font-bold tabular-nums ${colour}`}>{entry.feedback.score}/10</span>;
 }

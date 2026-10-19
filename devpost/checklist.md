@@ -158,6 +158,8 @@ Build mode: learn
 
 - [x] Use `intervue-logo.svg` for every logo: header, login card, favicon, manifest, and the generated PWA/Apple icons (learner request during final review)
 - [x] Track picker moved to the left as a drawer that opens and closes from the header and the start card, with keyboard and screen-reader support (learner request during final review)
+- [x] Full-width layout: pages use the whole window (two- and three-column on wide screens), the track list is a docked left panel on Home, and each screen was re-laid out (learner request during final review)
+- [x] Motion and richer disclosure: animated accordions for answers and track groups, sliding segmented controls, drawer slide, score count-up, chart draw-in, staggered entrances, skeleton loaders, all disabled by prefers-reduced-motion (learner request during final review)
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

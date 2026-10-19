@@ -1,4 +1,5 @@
 import Button from "@/components/ui/Button";
+import Skeleton from "@/components/ui/Skeleton";
 import type { Debrief } from "@/types";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 
@@ -19,7 +20,7 @@ export default function SessionDebriefCard({
   numbers: number[];
   onRetry: () => void;
 }) {
-  const shell = "rounded-2xl bg-sage-100 p-5 sm:p-6 text-darkslate-900";
+  const shell = "card animate-fade-up p-5 sm:p-7";
 
   if (view.status === "too-few") {
     return (
@@ -36,6 +37,11 @@ export default function SessionDebriefCard({
         <p role="status" className="mt-1 text-sm font-semibold text-darkslate-600">
           {view.status === "waiting" ? "Waiting for your answer reviews to finish…" : "Writing your debrief…"}
         </p>
+        <div className="mt-4 space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-10/12" />
+          <Skeleton className="h-20 w-full" />
+        </div>
       </section>
     );
   }

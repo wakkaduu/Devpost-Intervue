@@ -56,13 +56,17 @@ export default function ScoreTrendChart({ points }: { points: TrendPoint[] }) {
         )}
 
         {points.length > 1 && (
-          <path d={path} fill="none" stroke="#344E41" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          <path d={path} fill="none" stroke="#344E41" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" pathLength={1} strokeDasharray={1} className="animate-draw" />
         )}
 
         {points.map((p, i) => (
           <g key={p.id}>
             {/* 2px surface ring keeps markers legible where they sit on the line */}
-            <circle cx={x(i)} cy={y(p.score)} r={active === i ? 7 : 5} fill="#344E41" stroke="#E2ECE5" strokeWidth={2} />
+            <circle
+              cx={x(i)} cy={y(p.score)} r={active === i ? 7 : 5} fill="#344E41" stroke="#E2ECE5" strokeWidth={2}
+              className="animate-pop transition-[r] duration-150"
+              style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: `${300 + i * 120}ms` }}
+            />
             {/* Hit area and keyboard stop, bigger than the painted marker */}
             <circle
               cx={x(i)}

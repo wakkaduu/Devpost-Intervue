@@ -25,3 +25,23 @@ export function trendSummary(points: TrendPoint[]): { change: number; text: stri
   if (change < 0) return { change, text: `Down ${abs} ${unit} since your first session` };
   return { change, text: "Unchanged since your first session" };
 }
+
+export interface TrendStats {
+  sessions: number;
+  average: number;
+  best: number;
+  latest: number;
+}
+
+/** Headline numbers for a set of points. Null when there are none. */
+export function trendStats(points: TrendPoint[]): TrendStats | null {
+  if (points.length === 0) return null;
+  const scores = points.map((p) => p.score);
+  const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+  return {
+    sessions: points.length,
+    average: Math.round(mean * 10) / 10,
+    best: Math.max(...scores),
+    latest: scores[scores.length - 1],
+  };
+}

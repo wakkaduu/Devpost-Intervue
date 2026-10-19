@@ -3,7 +3,7 @@ import { annotateWords, OPTIMAL_WPM, type DeliveryMetrics } from "@/lib/speech-m
 export default function DeliveryPanel({ delivery, transcript }: { delivery: DeliveryMetrics; transcript: string }) {
   const good = delivery.paceCategory === "optimal";
   return (
-    <section aria-label="Delivery feedback" className="rounded-2xl border border-sage-300 bg-white/60 p-4 text-darkslate-900">
+    <section aria-label="Delivery feedback" className="rounded-xl border border-sage-300 bg-white/60 p-4 text-darkslate-900">
       <h3 className="text-sm font-bold uppercase tracking-wide text-forest-700">How you sounded</h3>
       <dl className="mt-2 grid grid-cols-2 gap-3 text-sm">
         <div>

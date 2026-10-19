@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const h = vi.hoisted(() => ({ pathname: "/", push: vi.fn() }));
@@ -85,7 +85,7 @@ describe("track drawer toggle", () => {
   it("picking a track on Home just selects it", async () => {
     setup();
     await userEvent.click(screen.getByRole("button", { name: "Browse tracks" }));
-    await userEvent.click(screen.getByRole("button", { name: /Cultural Fit/ }));
+    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: /Cultural Fit/ }));
     expect(screen.getByTestId("selected")).toHaveTextContent("Cultural Fit");
     expect(h.push).not.toHaveBeenCalled();
   });
