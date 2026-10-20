@@ -44,7 +44,7 @@ Versions from the existing `package.json`; re-verify at install.
 - **Inter** font via `next/font`.
 
 Learner-chosen: "rebuild the same stack." Accepted tradeoff: many accounts and keys, mitigated by core-first build order.
-Dropped (learner confirmed ElevenLabs and Remotion are not needed; Remotion belonged to the old repo's `my-video/` folder, which is not rebuilt): `@elevenlabs/elevenlabs-js` (listed in the old `package.json` but never imported; the interviewer voice uses the browser's Web Speech API).
+Dropped: a text-to-speech package that the old `package.json` listed but never imported, and the old repo's demo-video folder, which is not rebuilt. The interviewer voice uses the browser's Web Speech API.
 Unverified: current Gemini and Groq model names (`GEMINI_MODEL=gemini-flash-lite-latest`, `GROQ_MODEL=openai/gpt-oss-120b`), and whether `next-auth` v5 beta works with the Next version at install. Check these first in the build.
 
 ## Where It Runs and How Someone Tries It
@@ -160,7 +160,7 @@ intervue-learn/
 - **Supabase save fails or duplicate save** → the user keeps their results on screen with a notice; saves are idempotent so no duplicate chart points. Guests are unaffected (local storage).
 
 ## What Was Simplified and Why
-- **Interviewer voice via the browser's Web Speech API, with a Gemini server voice as fallback**, not ElevenLabs — the old app never used ElevenLabs, and it avoids a paid service. The fallback exists because some browsers (Brave, Chromium on Linux) have the speech API but no voices.
+- **Interviewer voice via the browser's Web Speech API, with a Gemini server voice as fallback**, not a paid speech service. The old app never used one, and this avoids the cost. The fallback exists because some browsers (Brave, Chromium on Linux) have the speech API but no voices.
 - **No pre-seeded demo account** — it carried a known password in a public repo.
 - **AI keys server-only; no user-facing API-key modal** — learner decision; fewer ways to leak a key.
 - **Core-first build order** — the extended set (email confirmation, PWA, provider fallback, etc.) comes after the demoable core.
@@ -173,7 +173,7 @@ intervue-learn/
 - AI keys stay server-only.
 - Email/password, Google and GitHub sign-in all carry over.
 
-**Derived implementation details (not learner choices):** the file structure, the dropped ElevenLabs dependency, and omitting the demo-account seed.
+**Derived implementation details (not learner choices):** the file structure, the dropped unused speech package, and omitting the demo-account seed.
 
 **Learner's one uncertainty:** how the AI review happens in the background. Clarified by walking the journey: the browser posts to `/api/review`; the server builds the prompt, calls Gemini then Groq then the basic grader, and returns structured feedback. Check during the build: the review response includes `source` (`ai` or `basic`) and server logs show which provider answered.
 
